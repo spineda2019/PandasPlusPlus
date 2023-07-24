@@ -1,1 +1,7 @@
 TODO.txt
+dllmain.cpp
+CSVLibrary.vcxproj
+CSVLibrary.vcxproj.filters
+CSVLibrary.vcxproj.user
+framework.h
+x64/
