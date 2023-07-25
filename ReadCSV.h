@@ -82,8 +82,22 @@ class CSV {
     this->width_ = (this->width_ / this->height_) + 1;
   }
 
+  /**
+   * @brief Returns the number of rows in a data frame exclusing the header row
+   * @return Dataframe's number of rows
+  */
   inline uint64_t Height() { return this->height_; }
+
+  /**
+   * @brief Returns the number of columns in a data frame
+   * @return Frame's number of columns
+  */
   inline uint64_t Width() { return this->width_; }
+
+  /**
+   * @brief Returns if the dataframe has a row of column headers or not
+   * @return True if there is a row of column headers, False if otherwise
+  */
   inline bool HasHeaderRow() { return this->has_header_row_; }
 
   /**
