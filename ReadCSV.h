@@ -1,9 +1,12 @@
 #ifndef CSVLIBRARY_READCSV_H
 #define CSVLIBRARY_READCSV_H
 
+#include <algorithm>
+#include <execution>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <numeric>
 #include <string>
 #include <vector>
 
@@ -192,15 +195,41 @@ class CSV {
    * this->has_header_row is true
    * @return The column's mean on success, returns NaN on failure
    */
-  T Mean(const std::string& col) {
+  T Mean(const std::string& col_name) {
     if (!this->has_header_row_) {
       std::cout << "This frame has no headers. Be aware, NaN returned..."
                 << std::endl;
       return std::numeric_limits<T>::quiet_NaN();
     }
+    // Find col index
+    size_t col_index{};
+    for (size_t i = 0; i < this->width_; i++) {
+      if (col_name == (this->headers)[i]) {
+        col_index = i;
+        break;
+      }
+    }
+
+    // create a basic vector of indeces to get mean
+    std::vector<T> col(this->height_);
+    std::iota(col.begin(), col.end(), T(0.0));
+    std::transform(
+        std::execution::par_unseq, col.begin(), col.end(), col.begin(),
+        [this, &col_index](auto& x) {
+          T val{};
+          // catch NaN
+          if ((this->data)[x][col_index] == (this->data)[x][col_index]) {
+            val = (this->data)[x][col_index];
+          } else {
+            val = T(0.0);
+          }
+          return val;
+        });
+    return std::reduce(std::execution::par_unseq, col.begin(), col.end()) /
+           T(this->height_);
   }
 
-  T Mean(const size_t col) {}
+  T Mean(const size_t col, bool vertical) {}
 
   T Mean() {}
 
