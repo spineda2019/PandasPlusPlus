@@ -14,6 +14,12 @@ constexpr uint64_t padding = 5;
 template <class T>
 class CSV {
  public:
+  /**
+   * @brief Creates a dataframe with a file path and csv headers.
+   * @param file_name: filepath to csv file you want to load
+   * @param file_has_header: whether or not your file has headers in the first
+   * row of the csv
+   */
   [[nodiscard]] explicit CSV(const std::string& file_name,
                              bool file_has_header) {
     this->height_ = 0;
@@ -110,6 +116,26 @@ class CSV {
     std::cout << std::endl;
 
     for (size_t row = 0; row < n_rows; row++) {
+      for (size_t col = 0; col < this->width_; col++) {
+        std::cout << std::setw(this->max_column_width_) << this->data[row][col]
+                  << "|";
+      }
+      std::cout << std::endl;
+    }
+  }
+
+  void DataTail(uint64_t n_rows) {
+    if (n_rows > this->height_) {
+      std::cout << "More rows requested than exist" << std::endl;
+      return;
+    }
+
+    if (n_rows < 0) {
+      std::cout << "Can not print negative rows" << std::endl;
+      return;
+    }
+
+    for (size_t row = this->height_ - 1; row - n_rows > 0; row--) {
       for (size_t col = 0; col < this->width_; col++) {
         std::cout << std::setw(this->max_column_width_) << this->data[row][col]
                   << "|";
