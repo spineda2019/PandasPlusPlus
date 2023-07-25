@@ -213,18 +213,18 @@ class CSV {
     // create a basic vector of indeces to get mean
     std::vector<T> col(this->height_);
     std::iota(col.begin(), col.end(), T(0.0));
-    std::transform(
-        std::execution::par_unseq, col.begin(), col.end(), col.begin(),
-        [this, &col_index](auto& x) {
-          T val{};
-          // catch NaN
-          if ((this->data)[x][col_index] == (this->data)[x][col_index]) {
-            val = (this->data)[x][col_index];
-          } else {
-            val = T(0.0);
-          }
-          return val;
-        });
+    std::transform(std::execution::par_unseq, col.begin(), col.end(),
+                   col.begin(), [this, &col_index](T& x) {
+                     T val{};
+                     // catch NaN
+                     if ((this->data)[static_cast<size_t>(x)][col_index] ==
+                         (this->data)[static_cast<size_t>(x)][col_index]) {
+                       val = (this->data)[static_cast<size_t>(x)][col_index];
+                     } else {
+                       val = T(0.0);
+                     }
+                     return val;
+                   });
     return std::reduce(std::execution::par_unseq, col.begin(), col.end()) /
            T(this->height_);
   }
