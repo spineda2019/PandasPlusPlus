@@ -103,6 +103,11 @@ class CSV {
     }
 
     if (this->HasHeaderRow()) {
+      for (size_t i = 0;
+           i < (this->max_column_width_ * this->width_) + (2 * padding); i++) {
+        std::cout << "_";
+      }
+      std::cout << std::endl;
       for (const std::string& str : this->headers) {
         std::cout << std::setw(this->max_column_width_) << str << "|";
       }
@@ -134,6 +139,24 @@ class CSV {
       std::cout << "Can not print negative rows" << std::endl;
       return;
     }
+
+    if (this->HasHeaderRow()) {
+      for (size_t i = 0;
+           i < (this->max_column_width_ * this->width_) + (2 * padding); i++) {
+        std::cout << "_";
+      }
+      std::cout << std::endl;
+      for (const std::string& str : this->headers) {
+        std::cout << std::setw(this->max_column_width_) << str << "|";
+      }
+      std::cout << std::endl;
+    }
+
+    for (size_t i = 0;
+         i < (this->max_column_width_ * this->width_) + (2 * padding); i++) {
+      std::cout << "_";
+    }
+    std::cout << std::endl;
 
     for (size_t row = this->height_ - 1; row > this->height_ - n_rows; row--) {
       for (size_t col = 0; col < this->width_; col++) {
