@@ -202,13 +202,10 @@ class CSV {
       return std::numeric_limits<T>::quiet_NaN();
     }
     // Find col index
-    size_t col_index{};
-    for (size_t i = 0; i < this->width_; i++) {
-      if (col_name == (this->headers)[i]) {
-        col_index = i;
-        break;
-      }
-    }
+    auto col_index =
+        std::find(std::execution::par_unseq, (this->headers).begin(),
+                  (this->headers).end(), col_name) -
+        (this->headers).begin();
 
     // create a basic vector of indeces to get mean
     std::vector<T> col(this->height_);
