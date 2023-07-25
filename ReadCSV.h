@@ -129,6 +129,11 @@ class CSV {
     }
   }
 
+  /**
+   * @brief Print the last n rows of the dataframe to standard output, starting
+   * at the last row
+   * @param n_rows: number of rows to print
+   */
   void PrintTail(uint64_t n_rows) {
     if (n_rows > this->height_) {
       std::cout << "More rows requested than exist" << std::endl;
