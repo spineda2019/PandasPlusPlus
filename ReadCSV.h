@@ -124,7 +124,7 @@ class CSV {
     }
   }
 
-  void DataTail(uint64_t n_rows) {
+  void PrintTail(uint64_t n_rows) {
     if (n_rows > this->height_) {
       std::cout << "More rows requested than exist" << std::endl;
       return;
@@ -135,7 +135,7 @@ class CSV {
       return;
     }
 
-    for (size_t row = this->height_ - 1; row - n_rows > 0; row--) {
+    for (size_t row = this->height_ - 1; row > this->height_ - n_rows; row--) {
       for (size_t col = 0; col < this->width_; col++) {
         std::cout << std::setw(this->max_column_width_) << this->data[row][col]
                   << "|";
