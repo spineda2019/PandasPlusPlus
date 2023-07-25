@@ -72,7 +72,7 @@ class CSV {
           this->data[row].push_back(
               T(std::stof(string_value.substr(0, string_value.find(",")))));
         } catch (...) {
-          this->data[row].push_back(T(0));
+          this->data[row].push_back(std::numeric_limits<T>::quiet_NaN());
         }
         string_value.erase(0, pos + 1);
       }
@@ -85,19 +85,19 @@ class CSV {
   /**
    * @brief Returns the number of rows in a data frame exclusing the header row
    * @return Dataframe's number of rows
-  */
+   */
   inline uint64_t Height() { return this->height_; }
 
   /**
    * @brief Returns the number of columns in a data frame
    * @return Frame's number of columns
-  */
+   */
   inline uint64_t Width() { return this->width_; }
 
   /**
    * @brief Returns if the dataframe has a row of column headers or not
    * @return True if there is a row of column headers, False if otherwise
-  */
+   */
   inline bool HasHeaderRow() { return this->has_header_row_; }
 
   /**
@@ -185,6 +185,24 @@ class CSV {
       std::cout << std::endl;
     }
   }
+
+  /**
+   * @brief Get the mean of a specific column of that dataframe
+   * @param col: String specifying which column to get mean from. Only works if
+   * this->has_header_row is true
+   * @return The column's mean on success, returns NaN on failure
+   */
+  T Mean(const std::string& col) {
+    if (!this->has_header_row_) {
+      std::cout << "This frame has no headers. Be aware, NaN returned..."
+                << std::endl;
+      return std::numeric_limits<T>::quiet_NaN();
+    }
+  }
+
+  T Mean(const size_t col) {}
+
+  T Mean() {}
 
  private:
   uint64_t height_;
