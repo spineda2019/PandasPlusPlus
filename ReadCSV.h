@@ -158,7 +158,7 @@ class CSV {
     }
     std::cout << std::endl;
 
-    for (size_t row = this->height_ - 1; row > this->height_ - n_rows; row--) {
+    for (size_t row = this->height_ - 1; row >= this->height_ - n_rows; row--) {
       for (size_t col = 0; col < this->width_; col++) {
         std::cout << std::setw(this->max_column_width_) << this->data[row][col]
                   << "|";
