@@ -15,7 +15,7 @@ namespace read_file {
 constexpr uint64_t padding = 5;
 
 template <class T>
-class CSV {
+class Dataframe {
  public:
   /**
    * @brief Creates a dataframe with a file path and csv headers.
@@ -23,8 +23,8 @@ class CSV {
    * @param file_has_header: whether or not your file has headers in the first
    * row of the csv
    */
-  [[nodiscard]] explicit CSV(const std::string& file_name,
-                             bool file_has_header) {
+  [[nodiscard]] explicit Dataframe(const std::string& file_name,
+                                   bool file_has_header) {
     this->height_ = 0;
     this->width_ = 0;
     this->max_column_width_ = 0;
@@ -43,7 +43,7 @@ class CSV {
       size_t pos{};
 
       while ((pos = header_row.find(",")) != std::string::npos) {
-        this->headers.push_back(header_row.substr(0, header_row.find(",")));
+        this->headers_.push_back(header_row.substr(0, header_row.find(",")));
 
         if (header_row.substr(0, header_row.find(",")).length() >
             this->max_column_width_) {
@@ -53,7 +53,7 @@ class CSV {
 
         header_row.erase(0, pos + 1);
       }
-      this->headers.push_back(
+      this->headers_.push_back(
           header_row);  // push last val since it will no longer have a comma
     } else {
       this->has_header_row_ = false;
@@ -67,25 +67,34 @@ class CSV {
     std::string sub_string_value{};
 
     size_t row = 0;
-    size_t pos{};
+    size_t pos = 0;
     while (std::getline(file, string_value)) {
-      this->data.push_back(std::vector<T>{});
+      this->data_.push_back(std::vector<T>{});
 
       while ((pos = string_value.find(",")) != std::string::npos) {
         this->width_++;
 
         try {
-          this->data[row].push_back(
+          this->data_[row].push_back(
               T(std::stof(string_value.substr(0, string_value.find(",")))));
         } catch (...) {
-          this->data[row].push_back(std::numeric_limits<T>::quiet_NaN());
+          this->data_[row].push_back(std::numeric_limits<T>::quiet_NaN());
         }
         string_value.erase(0, pos + 1);
       }
+
+      // store last col val where no more comma is found
+      try {
+        this->data_[row].push_back(T(std::stof(string_value)));
+      } catch (...) {
+        this->data_[row].push_back(std::numeric_limits<T>::quiet_NaN());
+      }
+      this->width_++;
+
       row++;
       this->height_++;
     }
-    this->width_ = (this->width_ / this->height_) + 1;
+    this->width_ = (this->width_ / this->height_);
   }
 
   /**
@@ -128,7 +137,7 @@ class CSV {
         std::cout << "_";
       }
       std::cout << std::endl;
-      for (const std::string& str : this->headers) {
+      for (const std::string& str : this->headers_) {
         std::cout << std::setw(this->max_column_width_) << str << "|";
       }
       std::cout << std::endl;
@@ -142,7 +151,7 @@ class CSV {
 
     for (size_t row = 0; row < n_rows; row++) {
       for (size_t col = 0; col < this->width_; col++) {
-        std::cout << std::setw(this->max_column_width_) << this->data[row][col]
+        std::cout << std::setw(this->max_column_width_) << this->data_[row][col]
                   << "|";
       }
       std::cout << std::endl;
@@ -171,7 +180,7 @@ class CSV {
         std::cout << "_";
       }
       std::cout << std::endl;
-      for (const std::string& str : this->headers) {
+      for (const std::string& str : this->headers_) {
         std::cout << std::setw(this->max_column_width_) << str << "|";
       }
       std::cout << std::endl;
@@ -185,7 +194,7 @@ class CSV {
 
     for (size_t row = this->height_ - 1; row >= this->height_ - n_rows; row--) {
       for (size_t col = 0; col < this->width_; col++) {
-        std::cout << std::setw(this->max_column_width_) << this->data[row][col]
+        std::cout << std::setw(this->max_column_width_) << this->data_[row][col]
                   << "|";
       }
       std::cout << std::endl;
@@ -206,12 +215,12 @@ class CSV {
     }
     // Find col index
     auto col_index =
-        std::find(std::execution::par_unseq, (this->headers).begin(),
-                  (this->headers).end(), col_name) -
-        (this->headers).begin();
+        std::find(std::execution::par_unseq, (this->headers_).begin(),
+                  (this->headers_).end(), col_name) -
+        (this->headers_).begin();
 
-    if (std::find(std::execution::par_unseq, (this->headers).begin(),
-                  (this->headers).end(), col_name) == (this->headers).end()) {
+    if (std::find(std::execution::par_unseq, (this->headers_).begin(),
+                  (this->headers_).end(), col_name) == (this->headers_).end()) {
       std::cout << "ERROR: Column not found" << std::endl;
       return std::numeric_limits<T>::quiet_NaN();
     }
@@ -225,9 +234,9 @@ class CSV {
                    col.begin(), [this, &col_index](T& x) {
                      T val{};
                      // catch NaN
-                     if ((this->data)[static_cast<size_t>(x)][col_index] ==
-                         (this->data)[static_cast<size_t>(x)][col_index]) {
-                       val = (this->data)[static_cast<size_t>(x)][col_index];
+                     if ((this->data_)[static_cast<size_t>(x)][col_index] ==
+                         (this->data_)[static_cast<size_t>(x)][col_index]) {
+                       val = (this->data_)[static_cast<size_t>(x)][col_index];
                      } else {
                        val = T(0.0);
                      }
@@ -245,8 +254,8 @@ class CSV {
   uint64_t height_;
   uint64_t width_;
   bool has_header_row_;
-  std::vector<std::vector<T>> data;
-  std::vector<std::string> headers;
+  std::vector<std::vector<T>> data_;
+  std::vector<std::string> headers_;
   uint64_t max_column_width_;
 };
 
