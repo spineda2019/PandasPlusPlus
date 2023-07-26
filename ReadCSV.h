@@ -44,11 +44,13 @@ class CSV {
 
       while ((pos = header_row.find(",")) != std::string::npos) {
         this->headers.push_back(header_row.substr(0, header_row.find(",")));
+
         if (header_row.substr(0, header_row.find(",")).length() >
             this->max_column_width_) {
           this->max_column_width_ =
               header_row.substr(0, header_row.find(",")).length() + padding;
         }
+
         header_row.erase(0, pos + 1);
       }
       this->headers.push_back(
@@ -71,6 +73,7 @@ class CSV {
 
       while ((pos = string_value.find(",")) != std::string::npos) {
         this->width_++;
+
         try {
           this->data[row].push_back(
               T(std::stof(string_value.substr(0, string_value.find(",")))));
@@ -207,9 +210,17 @@ class CSV {
                   (this->headers).end(), col_name) -
         (this->headers).begin();
 
+    if (std::find(std::execution::par_unseq, (this->headers).begin(),
+                  (this->headers).end(), col_name) == (this->headers).end()) {
+      std::cout << "ERROR: Column not found" << std::endl;
+      return std::numeric_limits<T>::quiet_NaN();
+    }
+
     // create a basic vector of indeces to get mean
     std::vector<T> col(this->height_);
+
     std::iota(col.begin(), col.end(), T(0.0));
+
     std::transform(std::execution::par_unseq, col.begin(), col.end(),
                    col.begin(), [this, &col_index](T& x) {
                      T val{};
