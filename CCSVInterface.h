@@ -35,6 +35,8 @@ typedef void* Dataframe;
 CCSV_API Dataframe create_float_dataframe(const char* file_path,
                                      int file_has_header);
 
+CCSV_API void deleteDataframe(Dataframe frame);
+
 #ifdef __cplusplus
 }
 #endif
