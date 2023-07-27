@@ -20,3 +20,7 @@ void print_Dataframe_tail_float(Dataframe frame, uint64_t n_rows) {
 void print_Dataframe_head_float(Dataframe frame, uint64_t n_rows) {
   reinterpret_cast<read_file::Dataframe<float>*>(frame)->PrintData(n_rows);
 }
+
+float col_name_mean_float(Dataframe frame, const char* col_name) {
+  return reinterpret_cast<read_file::Dataframe<float>*>(frame)->Mean(col_name);
+}
