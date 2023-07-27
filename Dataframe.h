@@ -225,7 +225,7 @@ class Dataframe {
       return std::numeric_limits<T>::quiet_NaN();
     }
 
-    // create a basic vector of indeces to get mean
+    // create a basic vector of indices to get mean
     std::vector<T> col(this->height_);
 
     std::iota(col.begin(), col.end(), T(0.0));
@@ -246,7 +246,42 @@ class Dataframe {
            T(this->height_);
   }
 
-  T Mean(const size_t col, bool vertical) {}
+  /**
+   * @brief
+   * @param index
+   * @param vertical
+   * @return
+   */
+  T Mean(const size_t index, bool col_wise) {
+    if (col_wise) {
+      if (index >= this->width_) {
+        std::cout << "Index out of bounds. NaN returned..." << std::endl;
+        return std::numeric_limits<T>::quiet_NaN();
+      }
+
+      // create a basic vector of indices to get mean
+      std::vector<T> col(this->height_);
+
+      std::iota(col.begin(), col.end(), T(0.0));
+
+      std::transform(std::execution::par_unseq, col.begin(), col.end(),
+                     col.begin(), [this, &index](T& x) {
+                       T val{};
+                       // catch NaN
+                       if ((this->data_)[static_cast<size_t>(x)][index] ==
+                           (this->data_)[static_cast<size_t>(x)][index]) {
+                         val = (this->data_)[static_cast<size_t>(x)][index];
+                       } else {
+                         val = T(0.0);
+                       }
+                       return val;
+                     });
+      return std::reduce(std::execution::par_unseq, col.begin(), col.end()) /
+             T(this->height_);
+    } else {
+      //TODO: Row wise mean
+    }
+  }
 
   T Mean() {}
 
