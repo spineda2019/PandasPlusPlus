@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include "Dataframe.h"
+
 #if defined _WIN32 || defined __CYGWIN__
 #ifdef __GNUC__
 #ifdef CCSV_EXPORTS
@@ -28,8 +30,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-CCSV_API void read_csv_float(const char* file_name, float* array_to_fill,
-                      uint64_t array_to_fill_length);
+typedef void* Dataframe;
+
+CCSV_API Dataframe create_float_dataframe(const char* file_path,
+                                     int file_has_header);
+
 #ifdef __cplusplus
 }
 #endif
