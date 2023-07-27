@@ -31,11 +31,16 @@
 extern "C" {
 #endif
 typedef void* Dataframe;
+// Float methods
 
-CCSV_API Dataframe create_float_dataframe(const char* file_path,
-                                     int file_has_header);
+CCSV_API Dataframe create_dataframe_float(const char* file_path,
+                                          int file_has_header);
 
-CCSV_API void delete_float_Dataframe(Dataframe frame);
+CCSV_API void delete_Dataframe_float(Dataframe frame);
+
+CCSV_API void print_Dataframe_tail_float(Dataframe frame, uint64_t n_rows);
+
+CCSV_API void print_Dataframe_head_float(Dataframe frame, uint64_t n_rows);
 
 #ifdef __cplusplus
 }
