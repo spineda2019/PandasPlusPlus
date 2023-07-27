@@ -8,6 +8,6 @@ Dataframe create_float_dataframe(const char* file_path,
       new read_file::Dataframe<float>(file_path, file_has_header));
 }
 
-void deleteDataframe(Dataframe frame) {
+void delete_float_Dataframe(Dataframe frame) {
   delete reinterpret_cast<read_file::Dataframe<float>*>(frame);
 }
