@@ -219,8 +219,7 @@ class Dataframe {
                   (this->headers_).end(), col_name) -
         (this->headers_).begin();
 
-    if (std::find(std::execution::par_unseq, (this->headers_).begin(),
-                  (this->headers_).end(), col_name) == (this->headers_).end()) {
+    if (col_index + (this->headers_).begin() == (this->headers_).end()) {
       std::cout << "ERROR: Column not found" << std::endl;
       return std::numeric_limits<T>::quiet_NaN();
     }
@@ -287,8 +286,7 @@ class Dataframe {
 
       // extract row to handle NaNs
       std::vector<T> row = this->data_[index];
-      std::transform(std::execution::par_unseq, row.begin(), row.end(),
-                     row.begin(), [](T& x) {
+      std::transform(row.begin(), row.end(), row.begin(), [](T& x) {
         if (x != x) {
           return T(0.0);
         } else {
@@ -296,8 +294,7 @@ class Dataframe {
         }
       });
 
-      return std::reduce(std::execution::par_unseq, row.begin(), row.end()) /
-             T(this->width_);
+      return std::reduce(row.begin(), row.end()) / T(this->width_);
     }
   }
 
