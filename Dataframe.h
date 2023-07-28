@@ -279,7 +279,25 @@ class Dataframe {
       return std::reduce(std::execution::par_unseq, col.begin(), col.end()) /
              T(this->height_);
     } else {
-      //TODO: Row wise mean
+      // Row wise mean
+      if (index >= this->height_) {
+        std::cout << "Index out of bounds. NaN returned..." << std::endl;
+        return std::numeric_limits<T>::quiet_NaN();
+      }
+
+      // extract row to handle NaNs
+      std::vector<T> row = this->data_[index];
+      std::transform(std::execution::par_unseq, row.begin(), row.end(),
+                     row.begin(), [](T& x) {
+        if (x != x) {
+          return T(0.0);
+        } else {
+          return x;
+        }
+      });
+
+      return std::reduce(std::execution::par_unseq, row.begin(), row.end()) /
+             T(this->width_);
     }
   }
 
