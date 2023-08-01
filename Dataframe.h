@@ -354,16 +354,18 @@ std::ostream& operator<<(std::ostream& os, const Dataframe<T>& df) {
     os << std::endl;
   }
 
-  os << std::endl;
-  os << std::setw((df.max_column_width_ * df.Width()) / 2) << "...";
-  os << std::endl << std::endl;
-
-  // bottom
-  for (size_t row = df.height_ - n_rows; row < df.height_; row++) {
-    for (size_t col = 0; col < df.width_; col++) {
-      os << std::setw(df.max_column_width_) << df.data_[row][col] << "|";
-    }
+  if (n_rows > 1) {
     os << std::endl;
+    os << std::setw((df.max_column_width_ * df.Width()) / 2) << "...";
+    os << std::endl << std::endl;
+
+    // bottom
+    for (size_t row = df.height_ - n_rows; row < df.height_; row++) {
+      for (size_t col = 0; col < df.width_; col++) {
+        os << std::setw(df.max_column_width_) << df.data_[row][col] << "|";
+      }
+      os << std::endl;
+    }
   }
 
   return os;
