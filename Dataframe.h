@@ -101,26 +101,26 @@ class Dataframe {
    * @brief Returns the number of rows in a data frame exclusing the header row
    * @return Dataframe's number of rows
    */
-  inline uint64_t Height() { return this->height_; }
+  inline uint64_t Height() const { return this->height_; }
 
   /**
    * @brief Returns the number of columns in a data frame
    * @return Frame's number of columns
    */
-  inline uint64_t Width() { return this->width_; }
+  inline uint64_t Width() const { return this->width_; }
 
   /**
    * @brief Returns if the dataframe has a row of column headers or not
    * @return True if there is a row of column headers, False if otherwise
    */
-  inline bool HasHeaderRow() { return this->has_header_row_; }
+  inline bool HasHeaderRow() const { return this->has_header_row_; }
 
   /**
    * @brief Print a desired amount of rows of the data table starting from the
    * top
    * @param n_rows: Number of rows to be printed
    */
-  void PrintData(uint64_t n_rows) {
+  void PrintData(uint64_t n_rows) const {
     if (n_rows > this->height_) {
       std::cout << "More rows requested than exist" << std::endl;
       return;
@@ -163,7 +163,7 @@ class Dataframe {
    * at the last row
    * @param n_rows: number of rows to print
    */
-  void PrintTail(uint64_t n_rows) {
+  void PrintTail(uint64_t n_rows) const {
     if (n_rows > this->height_) {
       std::cout << "More rows requested than exist" << std::endl;
       return;
@@ -207,7 +207,7 @@ class Dataframe {
    * this->has_header_row is true
    * @return The column's mean on success, returns NaN on failure
    */
-  T Mean(const std::string& col_name) {
+  T Mean(const std::string& col_name) const {
     if (!this->has_header_row_) {
       std::cout << "This frame has no headers. Be aware, NaN returned..."
                 << std::endl;
@@ -251,7 +251,7 @@ class Dataframe {
    * @param vertical
    * @return
    */
-  T Mean(const size_t index, bool col_wise) {
+  T Mean(const size_t index, bool col_wise) const {
     if (col_wise) {
       if (index >= this->width_) {
         std::cout << "Index out of bounds. NaN returned..." << std::endl;
@@ -298,7 +298,10 @@ class Dataframe {
     }
   }
 
-  T Mean() {}
+  T Mean() const {}
+
+  template <class T>
+  friend std::ostream& operator<<(std::ostream& os, const Dataframe<T>& df);
 
  private:
   uint64_t height_;
@@ -308,6 +311,63 @@ class Dataframe {
   std::vector<std::string> headers_;
   uint64_t max_column_width_;
 };
+
+/**
+ * @brief
+ * @param os
+ * @param df
+ * @return
+ */
+template <class T>
+std::ostream& operator<<(std::ostream& os, const Dataframe<T>& df) {
+  uint64_t n_rows{};
+
+  if (df.Height() >= 20) {
+    n_rows = 10;
+  } else {
+    n_rows = df.Height() / 2;
+  }
+
+  // top
+  if (df.HasHeaderRow()) {
+    for (size_t i = 0; i < (df.max_column_width_ * df.width_) + (2 * padding);
+         i++) {
+      os << "_";
+    }
+    os << std::endl;
+    for (const std::string& str : df.headers_) {
+      os << std::setw(df.max_column_width_) << str << "|";
+    }
+    os << std::endl;
+  }
+
+  for (size_t i = 0; i < (df.max_column_width_ * df.width_) + (2 * padding);
+       i++) {
+    os << "_";
+  }
+  os << std::endl;
+
+  for (size_t row = 0; row < n_rows; row++) {
+    for (size_t col = 0; col < df.width_; col++) {
+      os << std::setw(df.max_column_width_) << df.data_[row][col] << "|";
+    }
+    os << std::endl;
+  }
+
+  os << std::endl;
+  os << std::setw((df.max_column_width_ * df.Width()) / 2) << "...";
+  os << std::endl << std::endl;
+
+  // bottom
+  for (size_t row = df.height_ - n_rows; row < df.height_; row++) {
+    for (size_t col = 0; col < df.width_; col++) {
+      os << std::setw(df.max_column_width_) << df.data_[row][col] << "|";
+    }
+    os << std::endl;
+  }
+
+  return os;
+}
 
 }  // namespace read_file
 
