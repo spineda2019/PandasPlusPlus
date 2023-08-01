@@ -245,8 +245,28 @@ class Dataframe {
            T(this->height_);
   }
 
+  T Mean(size_t index) {
+    // Row wise mean
+    if (index >= this->height_) {
+      std::cout << "Index out of bounds. NaN returned..." << std::endl;
+      return std::numeric_limits<T>::quiet_NaN();
+    }
+
+    // extract row to handle NaNs
+    std::vector<T> row = this->data_[index];
+    std::transform(row.begin(), row.end(), row.begin(), [](T& x) {
+      if (x != x) {
+        return T(0.0);
+      } else {
+        return x;
+      }
+    });
+
+    return std::reduce(row.begin(), row.end()) / T(this->width_);
+  }
+
   /**
-   * @brief
+   * @brief Get mean of a desired row or column in a dataframe
    * @param index: Index of the vector to get the mean (either column or row)
    * @param col_wise: Whether or not the mean should be calculated column-wise
    * or row-wise
