@@ -247,9 +247,10 @@ class Dataframe {
 
   /**
    * @brief
-   * @param index
-   * @param vertical
-   * @return
+   * @param index: Index of the vector to get the mean (either column or row)
+   * @param col_wise: Whether or not the mean should be calculated column-wise
+   * or row-wise
+   * @return Mean of desired vector
    */
   T Mean(const size_t index, bool col_wise) const {
     if (col_wise) {
@@ -297,8 +298,6 @@ class Dataframe {
       return std::reduce(row.begin(), row.end()) / T(this->width_);
     }
   }
-
-  T Mean() const {}
 
   template <class T>
   friend std::ostream& operator<<(std::ostream& os, const Dataframe<T>& df);
