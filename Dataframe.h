@@ -160,7 +160,7 @@ class Dataframe {
 
   /**
    * @brief Print the last n rows of the dataframe to standard output, starting
-   * at the last row
+   * at the n to last row
    * @param n_rows: number of rows to print
    */
   void PrintTail(uint64_t n_rows) const {
@@ -209,7 +209,7 @@ class Dataframe {
    */
   T Mean(const std::string& col_name) const {
     if (!this->has_header_row_) {
-      std::cout << "This frame has no headers. Be aware, NaN returned..."
+      std::cout << "WARNING: This frame has no headers. NaN returned..."
                 << std::endl;
       return std::numeric_limits<T>::quiet_NaN();
     }
@@ -312,12 +312,6 @@ class Dataframe {
   uint64_t max_column_width_;
 };
 
-/**
- * @brief
- * @param os
- * @param df
- * @return
- */
 template <class T>
 std::ostream& operator<<(std::ostream& os, const Dataframe<T>& df) {
   uint64_t n_rows{};
