@@ -8,6 +8,7 @@
 #include <iostream>
 #include <numeric>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 namespace read_file {
@@ -15,6 +16,7 @@ namespace read_file {
 constexpr uint64_t padding = 5;
 
 template <class T>
+  requires(std::is_arithmetic_v<T>)
 class Dataframe {
  public:
   /**
@@ -257,39 +259,40 @@ class Dataframe {
     if (!omit_nan) {
       return Mean(col_name);
     } else {
-    //  if (!this->has_header_row_) {
-    //    std::cout << "WARNING: This frame has no headers. NaN returned..."
-    //              << std::endl;
-    //    return std::numeric_limits<T>::quiet_NaN();
-    //  }
-    //  // Find col index
-    //  auto col_index =
-    //      std::find(std::execution::par_unseq, (this->headers_).begin(),
-    //                (this->headers_).end(), col_name) -
-    //      (this->headers_).begin();
-    //
-    //  if (col_index + (this->headers_).begin() == (this->headers_).end()) {
-    //    std::cout << "ERROR: Column not found" << std::endl;
-    //    return std::numeric_limits<T>::quiet_NaN();
-    //  }
-    //
-    //  // create a basic vector of indices to get mean
-    //  std::vector<T> mask(this->height_);
-    //  std::vector<T> col{};
-    //
-    //  std::iota(mask.begin(), mask.end(), T(0.0));
-    //
-    //  std::for_each(
-    //      std::execution::par_unseq, mask.begin(), mask.end(),
-    //      [this, &col_index](T& x) {
-    //        // catch NaN
-    //        if ((this->data_)[static_cast<size_t>(x)][col_index] ==
-    //            (this->data_)[static_cast<size_t>(x)][col_index]) {
-    //          col.push_back((this->data_)[static_cast<size_t>(x)][col_index]);
-    //        }
-    //      });
-    //  return std::reduce(std::execution::par_unseq, col.begin(), col.end()) /
-    //         T(col.size());
+      //  if (!this->has_header_row_) {
+      //    std::cout << "WARNING: This frame has no headers. NaN returned..."
+      //              << std::endl;
+      //    return std::numeric_limits<T>::quiet_NaN();
+      //  }
+      //  // Find col index
+      //  auto col_index =
+      //      std::find(std::execution::par_unseq, (this->headers_).begin(),
+      //                (this->headers_).end(), col_name) -
+      //      (this->headers_).begin();
+      //
+      //  if (col_index + (this->headers_).begin() == (this->headers_).end()) {
+      //    std::cout << "ERROR: Column not found" << std::endl;
+      //    return std::numeric_limits<T>::quiet_NaN();
+      //  }
+      //
+      //  // create a basic vector of indices to get mean
+      //  std::vector<T> mask(this->height_);
+      //  std::vector<T> col{};
+      //
+      //  std::iota(mask.begin(), mask.end(), T(0.0));
+      //
+      //  std::for_each(
+      //      std::execution::par_unseq, mask.begin(), mask.end(),
+      //      [this, &col_index](T& x) {
+      //        // catch NaN
+      //        if ((this->data_)[static_cast<size_t>(x)][col_index] ==
+      //            (this->data_)[static_cast<size_t>(x)][col_index]) {
+      //          col.push_back((this->data_)[static_cast<size_t>(x)][col_index]);
+      //        }
+      //      });
+      //  return std::reduce(std::execution::par_unseq, col.begin(), col.end())
+      //  /
+      //         T(col.size());
     }
   }
 
@@ -329,20 +332,21 @@ class Dataframe {
     if (!omit_nan) {
       return Mean(index);
     } else {
-    //  if (index >= this->height_) {
-    //    std::cout << "Index out of bounds. NaN returned..." << std::endl;
-    //    return std::numeric_limits<T>::quiet_NaN();
-    //  }
-    //
-    //  std::vector<T> row{};
-    //  std::for_each((this->data_)[index].begin(), (this->data_)[index].end(),
-    //                [&row](T& x) {
-    //                  if (x == x) {
-    //                    row.push_back(x);
-    //                  }
-    //                });
-    //
-    //  return std::reduce(row.begin(), row.end()) / T(row.size());
+      //  if (index >= this->height_) {
+      //    std::cout << "Index out of bounds. NaN returned..." << std::endl;
+      //    return std::numeric_limits<T>::quiet_NaN();
+      //  }
+      //
+      //  std::vector<T> row{};
+      //  std::for_each((this->data_)[index].begin(),
+      //  (this->data_)[index].end(),
+      //                [&row](T& x) {
+      //                  if (x == x) {
+      //                    row.push_back(x);
+      //                  }
+      //                });
+      //
+      //  return std::reduce(row.begin(), row.end()) / T(row.size());
     }
   }
 
