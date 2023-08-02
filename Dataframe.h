@@ -209,7 +209,7 @@ class Dataframe {
    * this->has_header_row is true
    * @return The column's mean on success, returns NaN on failure
    */
-  T Mean(const std::string& col_name) const {
+  inline T Mean(const std::string& col_name) const {
     if (!this->has_header_row_) {
       std::cout << "WARNING: This frame has no headers. NaN returned..."
                 << std::endl;
@@ -255,7 +255,7 @@ class Dataframe {
    * if false
    * @return The column's mean on success, returns NaN on failure
    */
-  T Mean(const std::string& col_name, bool omit_nan) const {
+  inline T Mean(const std::string& col_name, bool omit_nan) const {
     if (!omit_nan) {
       return Mean(col_name);
     } else {
@@ -301,7 +301,7 @@ class Dataframe {
    * @param index: row index to calculate mean
    * @return The row's mean on success, returns NaN on failure
    */
-  T Mean(size_t index) const {
+  inline T Mean(size_t index) const {
     // Row wise mean
     if (index >= this->height_) {
       std::cout << "Index out of bounds. NaN returned..." << std::endl;
@@ -328,7 +328,7 @@ class Dataframe {
    * if false
    * @return The row's mean on success, returns NaN on failure
    */
-  T Mean(size_t index, bool omit_nan) const {
+  inline T Mean(size_t index, bool omit_nan) const {
     if (!omit_nan) {
       return Mean(index);
     } else {
@@ -357,7 +357,7 @@ class Dataframe {
    * or row-wise
    * @return Mean of desired vector
    */
-  T Mean(const size_t index, bool col_wise, bool omit_nan) const {
+  inline T Mean(const size_t index, bool col_wise, bool omit_nan) const {
     if (col_wise && !omit_nan) {
       if (index >= this->width_) {
         std::cout << "Index out of bounds. NaN returned..." << std::endl;
@@ -392,7 +392,8 @@ class Dataframe {
   }
 
   template <class T>
-  friend std::ostream& operator<<(std::ostream& os, const Dataframe<T>& df);
+  friend inline std::ostream& operator<<(std::ostream& os,
+                                         const Dataframe<T>& df);
 
  private:
   uint64_t height_;
@@ -404,7 +405,7 @@ class Dataframe {
 };
 
 template <class T>
-std::ostream& operator<<(std::ostream& os, const Dataframe<T>& df) {
+inline std::ostream& operator<<(std::ostream& os, const Dataframe<T>& df) {
   uint64_t n_rows{};
 
   if (df.Height() >= 20) {
