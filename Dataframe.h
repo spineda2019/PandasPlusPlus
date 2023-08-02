@@ -2,7 +2,8 @@
 #define CSVLIBRARY_READCSV_H
 
 #include <algorithm>
-#include <complex>
+#include <cassert>
+#include <cmath>
 #include <execution>
 #include <fstream>
 #include <iomanip>
@@ -301,11 +302,16 @@ class Dataframe {
    * @param index: row index to calculate mean
    * @return The row's mean on success, returns NaN on failure
    */
-  inline T Mean(size_t index) const {
+  inline T Mean(int64_t index) const {
     // Row wise mean
-    if (index >= this->height_) {
+    if (std::abs(index) >= this->height_) {
       std::cout << "Index out of bounds. NaN returned..." << std::endl;
       return std::numeric_limits<T>::quiet_NaN();
+    }
+
+    if (index < 0) {
+      index = (this->height_) - std::abs(index);
+      // std::cout << "Reverse Indexing" << std::endl;
     }
 
     // extract row to handle NaNs
