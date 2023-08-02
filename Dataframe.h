@@ -245,7 +245,60 @@ class Dataframe {
            T(this->height_);
   }
 
-  T Mean(size_t index) {
+  /**
+   * @brief Get the mean of a specific column of a dataframe
+   * @param col_name: String specifying which column to get mean from. Only
+   * works if this->has_header_row is true
+   * @param omit_nan: Ignores NaNs in all calculations if true, treats them as 0
+   * if false
+   * @return The column's mean on success, returns NaN on failure
+   */
+  T Mean(const std::string& col_name, bool omit_nan) const {
+    if (!omit_nan) {
+      return Mean(col_name);
+    } else {
+    //  if (!this->has_header_row_) {
+    //    std::cout << "WARNING: This frame has no headers. NaN returned..."
+    //              << std::endl;
+    //    return std::numeric_limits<T>::quiet_NaN();
+    //  }
+    //  // Find col index
+    //  auto col_index =
+    //      std::find(std::execution::par_unseq, (this->headers_).begin(),
+    //                (this->headers_).end(), col_name) -
+    //      (this->headers_).begin();
+    //
+    //  if (col_index + (this->headers_).begin() == (this->headers_).end()) {
+    //    std::cout << "ERROR: Column not found" << std::endl;
+    //    return std::numeric_limits<T>::quiet_NaN();
+    //  }
+    //
+    //  // create a basic vector of indices to get mean
+    //  std::vector<T> mask(this->height_);
+    //  std::vector<T> col{};
+    //
+    //  std::iota(mask.begin(), mask.end(), T(0.0));
+    //
+    //  std::for_each(
+    //      std::execution::par_unseq, mask.begin(), mask.end(),
+    //      [this, &col_index](T& x) {
+    //        // catch NaN
+    //        if ((this->data_)[static_cast<size_t>(x)][col_index] ==
+    //            (this->data_)[static_cast<size_t>(x)][col_index]) {
+    //          col.push_back((this->data_)[static_cast<size_t>(x)][col_index]);
+    //        }
+    //      });
+    //  return std::reduce(std::execution::par_unseq, col.begin(), col.end()) /
+    //         T(col.size());
+    }
+  }
+
+  /**
+   * @brief Get the mean of a specific row of a dataframe
+   * @param index: row index to calculate mean
+   * @return The row's mean on success, returns NaN on failure
+   */
+  T Mean(size_t index) const {
     // Row wise mean
     if (index >= this->height_) {
       std::cout << "Index out of bounds. NaN returned..." << std::endl;
@@ -266,14 +319,42 @@ class Dataframe {
   }
 
   /**
+   * @brief Get the mean of a specific row of a dataframe
+   * @param index: row index to calculate mean
+   * @param omit_nan: Ignores NaNs on all calculations if true, treats them as 0
+   * if false
+   * @return The row's mean on success, returns NaN on failure
+   */
+  T Mean(size_t index, bool omit_nan) const {
+    if (!omit_nan) {
+      return Mean(index);
+    } else {
+    //  if (index >= this->height_) {
+    //    std::cout << "Index out of bounds. NaN returned..." << std::endl;
+    //    return std::numeric_limits<T>::quiet_NaN();
+    //  }
+    //
+    //  std::vector<T> row{};
+    //  std::for_each((this->data_)[index].begin(), (this->data_)[index].end(),
+    //                [&row](T& x) {
+    //                  if (x == x) {
+    //                    row.push_back(x);
+    //                  }
+    //                });
+    //
+    //  return std::reduce(row.begin(), row.end()) / T(row.size());
+    }
+  }
+
+  /**
    * @brief Get mean of a desired row or column in a dataframe
    * @param index: Index of the vector to get the mean (either column or row)
    * @param col_wise: Whether or not the mean should be calculated column-wise
    * or row-wise
    * @return Mean of desired vector
    */
-  T Mean(const size_t index, bool col_wise) const {
-    if (col_wise) {
+  T Mean(const size_t index, bool col_wise, bool omit_nan) const {
+    if (col_wise && !omit_nan) {
       if (index >= this->width_) {
         std::cout << "Index out of bounds. NaN returned..." << std::endl;
         return std::numeric_limits<T>::quiet_NaN();
@@ -298,24 +379,11 @@ class Dataframe {
                      });
       return std::reduce(std::execution::par_unseq, col.begin(), col.end()) /
              T(this->height_);
+    } else if (col_wise && omit_nan) {
+      // TODO
     } else {
       // Row wise mean
-      if (index >= this->height_) {
-        std::cout << "Index out of bounds. NaN returned..." << std::endl;
-        return std::numeric_limits<T>::quiet_NaN();
-      }
-
-      // extract row to handle NaNs
-      std::vector<T> row = this->data_[index];
-      std::transform(row.begin(), row.end(), row.begin(), [](T& x) {
-        if (x != x) {
-          return T(0.0);
-        } else {
-          return x;
-        }
-      });
-
-      return std::reduce(row.begin(), row.end()) / T(this->width_);
+      return Mean(index, omit_nan);
     }
   }
 
