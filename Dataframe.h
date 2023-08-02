@@ -2,6 +2,7 @@
 #define CSVLIBRARY_READCSV_H
 
 #include <algorithm>
+#include <complex>
 #include <execution>
 #include <fstream>
 #include <iomanip>
@@ -16,7 +17,6 @@ namespace read_file {
 constexpr uint64_t padding = 5;
 
 template <class T>
-  requires(std::is_arithmetic_v<T>)
 class Dataframe {
  public:
   /**
@@ -396,12 +396,12 @@ class Dataframe {
                                          const Dataframe<T>& df);
 
  private:
-  uint64_t height_;
-  uint64_t width_;
+  size_t height_;
+  size_t width_;
   bool has_header_row_;
   std::vector<std::vector<T>> data_;
   std::vector<std::string> headers_;
-  uint64_t max_column_width_;
+  size_t max_column_width_;
 };
 
 template <class T>
