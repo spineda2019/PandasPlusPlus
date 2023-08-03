@@ -338,6 +338,10 @@ class Dataframe {
       uint64_t nans = std::count_if(col.begin(), col.end(),
                                     [](T x) { return std::isnan(x); });
 
+      if (this->height_ - nans == 0) {
+        return 0;
+      }
+
       return std::reduce(trimmed_col.begin(), trimmed_col.end()) /
              T(this->height_ - nans);
     }
@@ -403,6 +407,10 @@ class Dataframe {
           std::count_if(this->data_[index].begin(), this->data_[index].end(),
                         [](T x) { return std::isnan(x); });
 
+      if (this->width_ - nans == 0) {
+        return 0;
+      }
+
       return std::reduce(row.begin(), row.end()) / T(this->width_ - nans);
     }
   }
@@ -410,6 +418,7 @@ class Dataframe {
   /**
    * @brief Get mean of a desired row or column in a dataframe
    * @param index: Index of the vector to get the mean (either column or row)
+   * @param omit_nan: Treats NaN as 0 if false, ignores them if true
    * @param col_wise: Whether or not the mean should be calculated column-wise
    * or row-wise
    * @return Mean of desired vector
@@ -437,10 +446,8 @@ class Dataframe {
           [this, &index](T& x) {
             T val{};
             // catch NaN
-            if (!std::isnan(
-                    (this->data_)[static_cast<size_t>(std::abs(x))][index])) {
-              val = (this->data_)[static_cast<size_t>(std::abs(x))]
-                                 [index];  // eval abs
+            if (!std::isnan((this->data_)[static_cast<size_t>(x)][index])) {
+              val = (this->data_)[static_cast<size_t>(x)][index];  // eval abs
             } else {
               val = T(0.0);
             }
@@ -470,10 +477,8 @@ class Dataframe {
           [this, &index](T& x) {
             T val{};
             // catch NaN
-            if (!std::isnan(
-                    (this->data_)[static_cast<size_t>(std::abs(x))][index])) {
-              val = (this->data_)[static_cast<size_t>(std::abs(x))]
-                                 [index];  // eval abs
+            if (!std::isnan((this->data_)[static_cast<size_t>(x)][index])) {
+              val = (this->data_)[static_cast<size_t>(x)][index];  // eval abs
             } else {
               return std::numeric_limits<T>::quiet_NaN();
             }
@@ -486,12 +491,32 @@ class Dataframe {
       uint64_t nans = std::count_if(col.begin(), col.end(),
                                     [](T x) { return std::isnan(x); });
 
+      if (this->height_ - nans == 0) {
+        return 0;
+      }
+
       return std::reduce(trimmed_col.begin(), trimmed_col.end()) /
              T(this->height_ - nans);
     } else {
       // Row wise mean
       return Mean(index, omit_nan);
     }
+  }
+
+  /**
+   * @brief return mean of the whole Dataframe assuming NaN omits
+   * @return The whole Dataframe's mean
+   */
+  T Mean(void) const {
+    T m{};
+    std::vector<int64_t> col_indices(this->width_);
+    std::iota(col_indices.begin(), col_indices.end(), 0);
+
+    std::for_each(std::execution::par_unseq, col_indices.begin(),
+                  col_indices.end(),
+                  [&m, this](int64_t x) { m += this->Mean(x, true, true); });
+
+    return m*this->width_;  //almost right, exclude NaN cols from width
   }
 
   template <class T>
@@ -563,8 +588,6 @@ inline std::ostream& operator<<(std::ostream& os, const Dataframe<T>& df) {
 
   return os;
 }
-
-
 
 }  // namespace read_file
 
