@@ -2,7 +2,6 @@
 #define CSVLIBRARY_READCSV_H
 
 #include <algorithm>
-#include <cassert>
 #include <cmath>
 #include <complex>
 #include <execution>
@@ -32,11 +31,23 @@ class Dataframe {
     this->height_ = 0;
     this->width_ = 0;
     this->max_column_width_ = 0;
+    this->has_header_row_ = false;  // assumed. Here to please compiler
 
     std::ifstream file(file_name);
 
     if (!file) {
-      std::cout << "INVALID FILE PATH" << std::endl;
+      std::cout << "ERROR: INVALID FILE PATH" << std::endl;
+      return;
+    }
+
+    constexpr bool valid_t = std::is_same<T, float>::value ||
+                             std::is_same<T, double>::value ||
+                             std::is_same<T, long double>::value ||
+                             std::is_same<T, std::complex<float>>::value ||
+                             std::is_same<T, std::complex<double>>::value ||
+                             std::is_same<T, std::complex<long double>>::value;
+    if (!valid_t) {
+      std::cout << "ERROR: Bad type for Dataframe constructor" << std::endl;
       return;
     }
 
@@ -261,6 +272,7 @@ class Dataframe {
     if (!omit_nan) {
       return Mean(col_name);
     } else {
+      return T(0);
       //  if (!this->has_header_row_) {
       //    std::cout << "WARNING: This frame has no headers. NaN returned..."
       //              << std::endl;
@@ -305,7 +317,7 @@ class Dataframe {
    */
   inline T Mean(int64_t index) const {
     // Row wise mean
-    if (std::abs(index) >= this->height_) {
+    if (unsigned(std::abs(index)) >= this->height_) {
       std::cout << "Index out of bounds. NaN returned..." << std::endl;
       return std::numeric_limits<T>::quiet_NaN();
     }
@@ -339,6 +351,7 @@ class Dataframe {
     if (!omit_nan) {
       return Mean(index);
     } else {
+      return T(0);
       //  if (index >= this->height_) {
       //    std::cout << "Index out of bounds. NaN returned..." << std::endl;
       //    return std::numeric_limits<T>::quiet_NaN();
@@ -366,7 +379,7 @@ class Dataframe {
    */
   inline T Mean(int64_t index, bool col_wise, bool omit_nan) const {
     if (col_wise && !omit_nan) {
-      if (std::abs(index) >= this->width_) {
+      if (unsigned(std::abs(index)) >= this->width_) {
         std::cout << "Index out of bounds. NaN returned..." << std::endl;
         return std::numeric_limits<T>::quiet_NaN();
       }
@@ -399,6 +412,7 @@ class Dataframe {
              T(this->height_);
     } else if (col_wise && omit_nan) {
       // TODO
+      return T(0);
     } else {
       // Row wise mean
       return Mean(index, omit_nan);
