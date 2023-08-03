@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <iostream>
 #include <numeric>
+#include <ranges>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -19,40 +20,14 @@ constexpr uint64_t padding = 5;
 
 template <class T>
 class Dataframe {
- public:
+ private:
   /**
-   * @brief Creates a dataframe with a file path and csv headers.
-   * @param file_name: filepath to csv file you want to load
-   * @param file_has_header: whether or not your file has headers in the first
-   * row of the csv
+   * @brief Read the headers from a csv file
+   * @param file_has_header: Whether or not a csv file has header row of strings
+   * @param file: (non-const) reference to a file stream to read headers
    */
-  [[nodiscard]] explicit Dataframe(const std::string& file_name,
-                                   bool file_has_header) {
-    this->height_ = 0;
-    this->width_ = 0;
-    this->max_column_width_ = 0;
-    this->has_header_row_ = false;  // assumed. Here to please compiler
-
-    std::ifstream file(file_name);
-
-    if (!file) {
-      std::cout << "ERROR: INVALID FILE PATH" << std::endl;
-      return;
-    }
-
-    constexpr bool valid_t = std::is_same<T, float>::value ||
-                             std::is_same<T, double>::value ||
-                             std::is_same<T, long double>::value ||
-                             std::is_same<T, std::complex<float>>::value ||
-                             std::is_same<T, std::complex<double>>::value ||
-                             std::is_same<T, std::complex<long double>>::value;
-    if (!valid_t) {
-      std::cout << "ERROR: Bad type for Dataframe constructor" << std::endl;
-      return;
-    }
-
+  void ReadHeaders(bool file_has_header, std::ifstream& file) {
     if (file_has_header) {
-      this->has_header_row_ = true;
       std::string header_row;
       std::getline(file, header_row);
       size_t pos{};
@@ -70,23 +45,23 @@ class Dataframe {
       }
       this->headers_.push_back(
           header_row);  // push last val since it will no longer have a comma
-    } else {
-      this->has_header_row_ = false;
     }
+  }
 
-    if (this->max_column_width_ <= 0) {
-      max_column_width_ = 15;
-    }
-
+  /**
+   * @brief Read data from csv and put it into the dataframe
+   * @param file: (non-const) reference to the file to read from
+   */
+  void ReadVals(std::ifstream& file) {
     std::string string_value{};
     std::string sub_string_value{};
 
     size_t row = 0;
     size_t pos = 0;
-    while (std::getline(file, string_value)) {
+    while (std::getline(file, string_value)) {  // Rows
       this->data_.push_back(std::vector<T>{});
 
-      while ((pos = string_value.find(",")) != std::string::npos) {
+      while ((pos = string_value.find(",")) != std::string::npos) {  // Cols
         this->width_++;
 
         try {
@@ -110,6 +85,54 @@ class Dataframe {
       this->height_++;
     }
     this->width_ = (this->width_ / this->height_);
+  }
+
+ public:
+  /**
+   * @brief Creates a dataframe with a file path and csv headers.
+   * @param file_name: filepath to csv file you want to load
+   * @param file_has_header: whether or not your file has headers in the first
+   * row of the csv
+   */
+  Dataframe(const std::string& file_name, bool file_has_header)
+      : height_{0},
+        width_{0},
+        max_column_width_{0},
+        has_header_row_{file_has_header} {
+    std::ifstream file(file_name);
+    if (!file) {
+      std::cout << "ERROR: INVALID FILE PATH" << std::endl;
+      return;
+    }
+
+    ReadHeaders(this->has_header_row_, file);
+
+    if (this->max_column_width_ <= 0) {
+      max_column_width_ = 15;
+    }
+
+    ReadVals(file);
+  }
+
+  /**
+   * @brief Create a basic Dataframe assuming file has headers
+   * @param file_name: Name of csv file to read
+   */
+  Dataframe(const std::string& file_name)
+      : height_{0}, width_{0}, max_column_width_{0}, has_header_row_{true} {
+    std::ifstream file(file_name);
+    if (!file) {
+      std::cout << "ERROR: INVALID FILE PATH" << std::endl;
+      return;
+    }
+
+    ReadHeaders(this->has_header_row_, file);
+
+    if (this->max_column_width_ <= 0) {
+      max_column_width_ = 15;
+    }
+
+    ReadVals(file);
   }
 
   /**
@@ -244,18 +267,19 @@ class Dataframe {
 
     std::iota(col.begin(), col.end(), T(0.0));
 
-    std::transform(std::execution::par_unseq, col.begin(), col.end(),
-                   col.begin(), [this, &col_index](T& x) {
-                     T val{};
-                     // catch NaN
-                     if ((this->data_)[static_cast<size_t>(x)][col_index] ==
-                         (this->data_)[static_cast<size_t>(x)][col_index]) {
-                       val = (this->data_)[static_cast<size_t>(x)][col_index];
-                     } else {
-                       val = T(0.0);
-                     }
-                     return val;
-                   });
+    std::transform(
+        std::execution::par_unseq, col.begin(), col.end(), col.begin(),
+        [this, &col_index](T& x) {
+          T val{};
+          // catch NaN
+          if (!std::isnan((this->data_)[static_cast<size_t>(x)][col_index])) {
+            val = (this->data_)[static_cast<size_t>(x)][col_index];
+          } else {
+            val = T(0.0);
+          }
+          return val;
+        });
+
     return std::reduce(std::execution::par_unseq, col.begin(), col.end()) /
            T(this->height_);
   }
@@ -272,41 +296,50 @@ class Dataframe {
     if (!omit_nan) {
       return Mean(col_name);
     } else {
-      return T(0);
-      //  if (!this->has_header_row_) {
-      //    std::cout << "WARNING: This frame has no headers. NaN returned..."
-      //              << std::endl;
-      //    return std::numeric_limits<T>::quiet_NaN();
-      //  }
-      //  // Find col index
-      //  auto col_index =
-      //      std::find(std::execution::par_unseq, (this->headers_).begin(),
-      //                (this->headers_).end(), col_name) -
-      //      (this->headers_).begin();
-      //
-      //  if (col_index + (this->headers_).begin() == (this->headers_).end()) {
-      //    std::cout << "ERROR: Column not found" << std::endl;
-      //    return std::numeric_limits<T>::quiet_NaN();
-      //  }
-      //
-      //  // create a basic vector of indices to get mean
-      //  std::vector<T> mask(this->height_);
-      //  std::vector<T> col{};
-      //
-      //  std::iota(mask.begin(), mask.end(), T(0.0));
-      //
-      //  std::for_each(
-      //      std::execution::par_unseq, mask.begin(), mask.end(),
-      //      [this, &col_index](T& x) {
-      //        // catch NaN
-      //        if ((this->data_)[static_cast<size_t>(x)][col_index] ==
-      //            (this->data_)[static_cast<size_t>(x)][col_index]) {
-      //          col.push_back((this->data_)[static_cast<size_t>(x)][col_index]);
-      //        }
-      //      });
-      //  return std::reduce(std::execution::par_unseq, col.begin(), col.end())
-      //  /
-      //         T(col.size());
+      if (!this->has_header_row_) {
+        std::cout << "WARNING: This frame has no headers. NaN returned..."
+                  << std::endl;
+        return std::numeric_limits<T>::quiet_NaN();
+      }
+      // Find col index
+      auto col_index =
+          std::find(std::execution::par_unseq, (this->headers_).begin(),
+                    (this->headers_).end(), col_name) -
+          (this->headers_).begin();
+
+      if (col_index + (this->headers_).begin() == (this->headers_).end()) {
+        std::cout << "ERROR: Column not found" << std::endl;
+        return std::numeric_limits<T>::quiet_NaN();
+      }
+
+      // create a basic vector of indices to get mean
+      std::vector<T> col(this->height_);
+
+      std::iota(col.begin(), col.end(),
+                T(0.0));  // Fix me, complex nums can't ++
+
+      std::transform(std::execution::par_unseq, col.begin(), col.end(),
+                     col.begin(), [this, &col_index](T& x) {
+                       T val{};
+                       // catch NaN
+                       if (!std::isnan((this->data_)[static_cast<size_t>(
+                               std::abs(x))][col_index])) {
+                         val = (this->data_)[static_cast<size_t>(std::abs(x))]
+                                            [col_index];  // eval abs
+                       } else {
+                         return std::numeric_limits<T>::quiet_NaN();
+                       }
+                       return val;
+                     });
+
+      auto trimmed_col{
+          std::views::filter(col, [](T x) { return !std::isnan(x); })};
+
+      uint64_t nans = std::count_if(col.begin(), col.end(),
+                                    [](T x) { return std::isnan(x); });
+
+      return std::reduce(trimmed_col.begin(), trimmed_col.end()) /
+             T(this->height_ - nans);
     }
   }
 
@@ -317,7 +350,7 @@ class Dataframe {
    */
   inline T Mean(int64_t index) const {
     // Row wise mean
-    if (unsigned(std::abs(index)) >= this->height_) {
+    if (static_cast<uint64_t>(std::abs(index)) >= this->height_) {
       std::cout << "Index out of bounds. NaN returned..." << std::endl;
       return std::numeric_limits<T>::quiet_NaN();
     }
@@ -328,14 +361,16 @@ class Dataframe {
     }
 
     // extract row to handle NaNs
-    std::vector<T> row = this->data_[index];
-    std::transform(row.begin(), row.end(), row.begin(), [](T& x) {
-      if (x != x) {
-        return T(0.0);
-      } else {
-        return x;
-      }
-    });
+    // std::vector<T> row = this->data_[index];
+    std::vector<T> row(this->width_);
+    std::transform(this->data_[index].begin(), this->data_[index].end(),
+                   row.begin(), [](const T& x) {
+                     if (std::isnan(x)) {
+                       return T(0.0);
+                     } else {
+                       return x;
+                     }
+                   });
 
     return std::reduce(row.begin(), row.end()) / T(this->width_);
   }
@@ -347,26 +382,28 @@ class Dataframe {
    * if false
    * @return The row's mean on success, returns NaN on failure
    */
-  inline T Mean(size_t index, bool omit_nan) const {
+  inline T Mean(int64_t index, bool omit_nan) const {
     if (!omit_nan) {
       return Mean(index);
     } else {
-      return T(0);
-      //  if (index >= this->height_) {
-      //    std::cout << "Index out of bounds. NaN returned..." << std::endl;
-      //    return std::numeric_limits<T>::quiet_NaN();
-      //  }
-      //
-      //  std::vector<T> row{};
-      //  std::for_each((this->data_)[index].begin(),
-      //  (this->data_)[index].end(),
-      //                [&row](T& x) {
-      //                  if (x == x) {
-      //                    row.push_back(x);
-      //                  }
-      //                });
-      //
-      //  return std::reduce(row.begin(), row.end()) / T(row.size());
+      if (static_cast<uint64_t>(std::abs(index)) >= this->height_) {
+        std::cout << "Index out of bounds. NaN returned..." << std::endl;
+        return std::numeric_limits<T>::quiet_NaN();
+      }
+
+      if (index < 0) {
+        index = (this->height_) - std::abs(index);
+        // std::cout << "Reverse Indexing" << std::endl;
+      }
+
+      auto row{std::ranges::views::filter(
+          this->data_[index], [](const T& x) { return !std::isnan(x); })};
+
+      uint64_t nans =
+          std::count_if(this->data_[index].begin(), this->data_[index].end(),
+                        [](T x) { return std::isnan(x); });
+
+      return std::reduce(row.begin(), row.end()) / T(this->width_ - nans);
     }
   }
 
@@ -377,9 +414,9 @@ class Dataframe {
    * or row-wise
    * @return Mean of desired vector
    */
-  inline T Mean(int64_t index, bool col_wise, bool omit_nan) const {
+  inline T Mean(int64_t index, bool omit_nan, bool col_wise) const {
     if (col_wise && !omit_nan) {
-      if (unsigned(std::abs(index)) >= this->width_) {
+      if (static_cast<uint64_t>(std::abs(index)) >= this->width_) {
         std::cout << "Index out of bounds. NaN returned..." << std::endl;
         return std::numeric_limits<T>::quiet_NaN();
       }
@@ -400,9 +437,10 @@ class Dataframe {
           [this, &index](T& x) {
             T val{};
             // catch NaN
-            if ((this->data_)[static_cast<size_t>(std::abs(x))][index] ==
-                (this->data_)[static_cast<size_t>(std::abs(x))][index]) {
-              val = (this->data_)[static_cast<size_t>(std::abs(x))][index];
+            if (!std::isnan(
+                    (this->data_)[static_cast<size_t>(std::abs(x))][index])) {
+              val = (this->data_)[static_cast<size_t>(std::abs(x))]
+                                 [index];  // eval abs
             } else {
               val = T(0.0);
             }
@@ -411,8 +449,45 @@ class Dataframe {
       return std::reduce(std::execution::par_unseq, col.begin(), col.end()) /
              T(this->height_);
     } else if (col_wise && omit_nan) {
-      // TODO
-      return T(0);
+      if (static_cast<uint64_t>(std::abs(index)) >= this->width_) {
+        std::cout << "Index out of bounds. NaN returned..." << std::endl;
+        return std::numeric_limits<T>::quiet_NaN();
+      }
+
+      // negative indexing
+      if (index < 0) {
+        index = (this->width_) - std::abs(index);
+      }
+
+      // create a basic vector of indices to get mean
+      std::vector<T> col(this->height_);
+
+      std::iota(col.begin(), col.end(),
+                T(0.0));  // Fix me, complex nums can't ++
+
+      std::transform(
+          std::execution::par_unseq, col.begin(), col.end(), col.begin(),
+          [this, &index](T& x) {
+            T val{};
+            // catch NaN
+            if (!std::isnan(
+                    (this->data_)[static_cast<size_t>(std::abs(x))][index])) {
+              val = (this->data_)[static_cast<size_t>(std::abs(x))]
+                                 [index];  // eval abs
+            } else {
+              return std::numeric_limits<T>::quiet_NaN();
+            }
+            return val;
+          });
+
+      auto trimmed_col{
+          std::views::filter(col, [](T x) { return !std::isnan(x); })};
+
+      uint64_t nans = std::count_if(col.begin(), col.end(),
+                                    [](T x) { return std::isnan(x); });
+
+      return std::reduce(trimmed_col.begin(), trimmed_col.end()) /
+             T(this->height_ - nans);
     } else {
       // Row wise mean
       return Mean(index, omit_nan);
