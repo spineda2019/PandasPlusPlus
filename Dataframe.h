@@ -139,19 +139,19 @@ class Dataframe {
    * @brief Returns the number of rows in a data frame exclusing the header row
    * @return Dataframe's number of rows
    */
-  inline uint64_t Height() const { return this->height_; }
+  uint64_t Height() const { return this->height_; }
 
   /**
    * @brief Returns the number of columns in a data frame
    * @return Frame's number of columns
    */
-  inline uint64_t Width() const { return this->width_; }
+  uint64_t Width() const { return this->width_; }
 
   /**
    * @brief Returns if the dataframe has a row of column headers or not
    * @return True if there is a row of column headers, False if otherwise
    */
-  inline bool HasHeaderRow() const { return this->has_header_row_; }
+  bool HasHeaderRow() const { return this->has_header_row_; }
 
   /**
    * @brief Print a desired amount of rows of the data table starting from the
@@ -245,7 +245,7 @@ class Dataframe {
    * this->has_header_row is true
    * @return The column's mean on success, returns NaN on failure
    */
-  inline T Mean(const std::string& col_name) const {
+  T Mean(const std::string& col_name) const {
     if (!this->has_header_row_) {
       std::cout << "WARNING: This frame has no headers. NaN returned..."
                 << std::endl;
@@ -292,7 +292,7 @@ class Dataframe {
    * if false
    * @return The column's mean on success, returns NaN on failure
    */
-  inline T Mean(const std::string& col_name, bool omit_nan) const {
+  T Mean(const std::string& col_name, bool omit_nan) const {
     if (!omit_nan) {
       return Mean(col_name);
     } else {
@@ -348,7 +348,7 @@ class Dataframe {
    * @param index: row index to calculate mean
    * @return The row's mean on success, returns NaN on failure
    */
-  inline T Mean(int64_t index) const {
+  T Mean(int64_t index) const {
     // Row wise mean
     if (static_cast<uint64_t>(std::abs(index)) >= this->height_) {
       std::cout << "Index out of bounds. NaN returned..." << std::endl;
@@ -382,7 +382,7 @@ class Dataframe {
    * if false
    * @return The row's mean on success, returns NaN on failure
    */
-  inline T Mean(int64_t index, bool omit_nan) const {
+  T Mean(int64_t index, bool omit_nan) const {
     if (!omit_nan) {
       return Mean(index);
     } else {
@@ -414,7 +414,7 @@ class Dataframe {
    * or row-wise
    * @return Mean of desired vector
    */
-  inline T Mean(int64_t index, bool omit_nan, bool col_wise) const {
+  T Mean(int64_t index, bool omit_nan, bool col_wise) const {
     if (col_wise && !omit_nan) {
       if (static_cast<uint64_t>(std::abs(index)) >= this->width_) {
         std::cout << "Index out of bounds. NaN returned..." << std::endl;
@@ -498,6 +498,10 @@ class Dataframe {
   friend inline std::ostream& operator<<(std::ostream& os,
                                          const Dataframe<T>& df);
 
+  std::vector<T> operator[](size_t index) {
+    return this->data_[index];  // get
+  }
+
  private:
   size_t height_;
   size_t width_;
@@ -559,6 +563,8 @@ inline std::ostream& operator<<(std::ostream& os, const Dataframe<T>& df) {
 
   return os;
 }
+
+
 
 }  // namespace read_file
 
