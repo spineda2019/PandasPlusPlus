@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <complex>
 #include <execution>
 #include <fstream>
 #include <iomanip>
@@ -363,30 +364,37 @@ class Dataframe {
    * or row-wise
    * @return Mean of desired vector
    */
-  inline T Mean(const size_t index, bool col_wise, bool omit_nan) const {
+  inline T Mean(int64_t index, bool col_wise, bool omit_nan) const {
     if (col_wise && !omit_nan) {
-      if (index >= this->width_) {
+      if (std::abs(index) >= this->width_) {
         std::cout << "Index out of bounds. NaN returned..." << std::endl;
         return std::numeric_limits<T>::quiet_NaN();
+      }
+
+      // negative indexing
+      if (index < 0) {
+        index = (this->width_) - std::abs(index);
       }
 
       // create a basic vector of indices to get mean
       std::vector<T> col(this->height_);
 
-      std::iota(col.begin(), col.end(), T(0.0));
+      std::iota(col.begin(), col.end(),
+                T(0.0));  // Fix me, complex nums can't ++
 
-      std::transform(std::execution::par_unseq, col.begin(), col.end(),
-                     col.begin(), [this, &index](T& x) {
-                       T val{};
-                       // catch NaN
-                       if ((this->data_)[static_cast<size_t>(x)][index] ==
-                           (this->data_)[static_cast<size_t>(x)][index]) {
-                         val = (this->data_)[static_cast<size_t>(x)][index];
-                       } else {
-                         val = T(0.0);
-                       }
-                       return val;
-                     });
+      std::transform(
+          std::execution::par_unseq, col.begin(), col.end(), col.begin(),
+          [this, &index](T& x) {
+            T val{};
+            // catch NaN
+            if ((this->data_)[static_cast<size_t>(std::abs(x))][index] ==
+                (this->data_)[static_cast<size_t>(std::abs(x))][index]) {
+              val = (this->data_)[static_cast<size_t>(std::abs(x))][index];
+            } else {
+              val = T(0.0);
+            }
+            return val;
+          });
       return std::reduce(std::execution::par_unseq, col.begin(), col.end()) /
              T(this->height_);
     } else if (col_wise && omit_nan) {
