@@ -8,6 +8,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <mutex>
 #include <numeric>
 #include <ranges>
 #include <string>
@@ -17,6 +18,9 @@
 namespace read_file {
 
 constexpr uint64_t padding = 5;
+namespace util {
+std::mutex data_mtx;
+}
 
 template <class T>
 class Dataframe {
@@ -85,6 +89,37 @@ class Dataframe {
       this->height_++;
     }
     this->width_ = (this->width_ / this->height_);
+  }
+
+  /**
+   * @brief Fill an empty vector with values (in any order) of a dataframe for
+   * the purpose of calculating its Median
+   * @param empty_vector: Empty vector to fill with dataframe values
+   */
+  void Flatten(std::vector<T>& empty_vector) const {
+    std::for_each(std::execution::par_unseq, this->data_.begin(),
+                  this->data_.end(), [&empty_vector](const std::vector<T>& x) {
+                    std::for_each(x.begin(), x.end(), [&x, &empty_vector](T y) {
+                      if (!std::isnan(y)) {
+                        util::data_mtx.lock();
+                        empty_vector.push_back(y);
+                        util::data_mtx.unlock();
+                      }
+                    });
+                  });
+  }
+
+  T MedianHelper(std::vector<T>& vec) const {
+    size_t n = vec.size() / 2;
+    std::nth_element(vec.begin(), vec.begin() + n, vec.end());
+
+    if (vec.size() % 2 == 0) {
+      T left_middle = *std::max_element(vec.begin(), vec.begin() + n);
+      return (left_middle + vec[n]) / T(2.0);
+    }
+    if (vec.size() % 2 != 0) {
+      return vec[n];
+    }
   }
 
  public:
@@ -511,7 +546,7 @@ class Dataframe {
     T sum{};
     T divisor{};
 
-    //cannot be threaded, has data race somewhere
+    // cannot be threaded, has data race somewhere
     std::for_each((this->data_).begin(),  // each row
                   (this->data_).end(),
                   [&sum, &divisor](const std::vector<T>& x) {
@@ -534,6 +569,16 @@ class Dataframe {
     return this->data_[index];  // get
   }
 
+  /**
+   * @brief calculate the composite median value of the whole dataframe
+   * @return the mdeian of the dataframe
+   */
+  T Median() {
+    std::vector<T> flat{};
+    Flatten(flat);
+    return MedianHelper(flat);
+  }
+
  private:
   size_t height_;
   size_t width_;
@@ -541,7 +586,7 @@ class Dataframe {
   std::vector<std::vector<T>> data_;
   std::vector<std::string> headers_;
   size_t max_column_width_;
-};
+};  // class Dataframe
 
 template <class T>
 inline std::ostream& operator<<(std::ostream& os, const Dataframe<T>& df) {
