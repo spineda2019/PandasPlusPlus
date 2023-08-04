@@ -109,6 +109,11 @@ class Dataframe {
                   });
   }
 
+  /**
+   * @brief get median of any vector
+   * @param vec vector with desired median
+   * @return median of vector vec
+   */
   T MedianHelper(std::vector<T>& vec) const {
     size_t n = vec.size() / 2;
     std::nth_element(vec.begin(), vec.begin() + n, vec.end());
@@ -570,10 +575,38 @@ class Dataframe {
   }
 
   /**
+   * @brief Get mean of a row based on index
+   * @param index index of the row to get the median
+   * @return median of the desired row
+   */
+  T Median(int64_t index) {
+    if (static_cast<uint64_t>(std::abs(index)) > this->height_) {
+      std::cout << "Index out of bounds. NaN returned..." << std::endl;
+      return std::numeric_limits<T>::quiet_NaN();
+    }
+
+    // negative indexing
+    if (index < 0) {
+      index = (this->height_) - std::abs(index);
+    }
+
+    // Handle NaN
+    std::vector<T> row{};
+    std::for_each(this->data_[index].begin(), this->data_[index].end(),
+                  [this, &row](T x) {
+                    if (!std::isnan(x)) {
+                      row.push_back(x);
+                    }
+                  });
+
+    return MedianHelper(row);
+  }
+
+  /**
    * @brief calculate the composite median value of the whole dataframe
    * @return the mdeian of the dataframe
    */
-  T Median() {
+  T Median(void) const {
     std::vector<T> flat{};
     Flatten(flat);
     return MedianHelper(flat);
