@@ -508,15 +508,22 @@ class Dataframe {
    * @return The whole Dataframe's mean
    */
   T Mean(void) const {
-    T m{};
-    std::vector<int64_t> col_indices(this->width_);
-    std::iota(col_indices.begin(), col_indices.end(), 0);
+    T sum{};
+    T divisor{};
 
-    std::for_each(std::execution::par_unseq, col_indices.begin(),
-                  col_indices.end(),
-                  [&m, this](int64_t x) { m += this->Mean(x, true, true); });
+    //cannot be threaded, has data race somewhere
+    std::for_each((this->data_).begin(),  // each row
+                  (this->data_).end(),
+                  [&sum, &divisor](const std::vector<T>& x) {
+                    std::for_each(x.begin(), x.end(), [&sum, &divisor](T y) {
+                      if (!std::isnan(y)) {
+                        sum += y;
+                        divisor++;
+                      }
+                    });
+                  });
 
-    return m*this->width_;  //almost right, exclude NaN cols from width
+    return sum / divisor;
   }
 
   template <class T>
