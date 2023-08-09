@@ -618,9 +618,9 @@ class Dataframe {
   }
 
   /**
-   * @brief
-   * @param col
-   * @return
+   * @brief Calculate median value of a column specified by it's header
+   * @param col Name of the column with desired median
+   * @return Median of named column
    */
   T Median(const std::string& col_name) const {
     // Find col index
@@ -646,8 +646,41 @@ class Dataframe {
   }
 
   /**
+   * @brief Calculate median value of a column or row specified by it's index
+   * @param index Index of column or row 
+   * @param col_wise Whether or not the index is of a column or row
+   * @return Median of selected vector
+  */
+  T Median(int64_t index, bool col_wise) {
+    if (!col_wise) {
+      return Median(index);
+    } else {
+      if (static_cast<uint64_t>(std::abs(index)) > this->width_) {
+        std::cout << "Index out of bounds. NaN returned..." << std::endl;
+        return std::numeric_limits<T>::quiet_NaN();
+      }
+
+      // negative indexing
+      if (index < 0) {
+        index = (this->width_) - std::abs(index);
+      }
+
+      std::vector<T> col{};
+      std::for_each(this->data_.begin(), this->data_.end(),
+                    [&col, index](const std::vector<T>& x) {
+                      if (!std::isnan(x[index])) {
+                        col.push_back(x[index]);
+                      }
+                    });
+
+      return MedianHelper(col);
+
+    }
+  }
+
+  /**
    * @brief calculate the composite median value of the whole dataframe
-   * @return the mdeian of the dataframe
+   * @return the median of the whole dataframe
    */
   T Median(void) const {
     std::vector<T> flat{};
