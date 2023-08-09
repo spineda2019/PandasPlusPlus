@@ -36,6 +36,7 @@ class Dataframe {
       std::getline(file, header_row);
       size_t pos{};
 
+      // parse commas in single row
       while ((pos = header_row.find(",")) != std::string::npos) {
         this->headers_.push_back(header_row.substr(0, header_row.find(",")));
 
@@ -110,7 +111,7 @@ class Dataframe {
   }
 
   /**
-   * @brief get median of any vector
+   * @brief get median of any vector (Must have NaN pre-handled)
    * @param vec vector with desired median
    * @return median of vector vec
    */
@@ -148,7 +149,7 @@ class Dataframe {
     ReadHeaders(this->has_header_row_, file);
 
     if (this->max_column_width_ <= 0) {
-      max_column_width_ = 15;
+      this->max_column_width_ = 15;
     }
 
     ReadVals(file);
@@ -166,10 +167,10 @@ class Dataframe {
       return;
     }
 
-    ReadHeaders(this->has_header_row_, file);
+    ReadHeaders(true, file);
 
     if (this->max_column_width_ <= 0) {
-      max_column_width_ = 15;
+      this->max_column_width_ = 15;
     }
 
     ReadVals(file);
@@ -214,10 +215,13 @@ class Dataframe {
            i < (this->max_column_width_ * this->width_) + (2 * padding); i++) {
         std::cout << "_";
       }
+
       std::cout << std::endl;
+
       for (const std::string& str : this->headers_) {
         std::cout << std::setw(this->max_column_width_) << str << "|";
       }
+
       std::cout << std::endl;
     }
 
@@ -225,8 +229,10 @@ class Dataframe {
          i < (this->max_column_width_ * this->width_) + (2 * padding); i++) {
       std::cout << "_";
     }
+
     std::cout << std::endl;
 
+    // Df Vals
     for (size_t row = 0; row < n_rows; row++) {
       for (size_t col = 0; col < this->width_; col++) {
         std::cout << std::setw(this->max_column_width_) << this->data_[row][col]
@@ -257,10 +263,13 @@ class Dataframe {
            i < (this->max_column_width_ * this->width_) + (2 * padding); i++) {
         std::cout << "_";
       }
+
       std::cout << std::endl;
+
       for (const std::string& str : this->headers_) {
         std::cout << std::setw(this->max_column_width_) << str << "|";
       }
+
       std::cout << std::endl;
     }
 
@@ -268,8 +277,10 @@ class Dataframe {
          i < (this->max_column_width_ * this->width_) + (2 * padding); i++) {
       std::cout << "_";
     }
+
     std::cout << std::endl;
 
+    // Df vals
     for (size_t row = this->height_ - n_rows; row < this->height_; row++) {
       for (size_t col = 0; col < this->width_; col++) {
         std::cout << std::setw(this->max_column_width_) << this->data_[row][col]
@@ -291,6 +302,7 @@ class Dataframe {
                 << std::endl;
       return std::numeric_limits<T>::quiet_NaN();
     }
+
     // Find col index
     auto col_index =
         std::find(std::execution::par_unseq, (this->headers_).begin(),
@@ -341,6 +353,7 @@ class Dataframe {
                   << std::endl;
         return std::numeric_limits<T>::quiet_NaN();
       }
+
       // Find col index
       auto col_index =
           std::find(std::execution::par_unseq, (this->headers_).begin(),
@@ -358,19 +371,19 @@ class Dataframe {
       std::iota(col.begin(), col.end(),
                 T(0.0));  // Fix me, complex nums can't ++
 
-      std::transform(std::execution::par_unseq, col.begin(), col.end(),
-                     col.begin(), [this, &col_index](T& x) {
-                       T val{};
-                       // catch NaN
-                       if (!std::isnan((this->data_)[static_cast<size_t>(
-                               std::abs(x))][col_index])) {
-                         val = (this->data_)[static_cast<size_t>(std::abs(x))]
-                                            [col_index];  // eval abs
-                       } else {
-                         return std::numeric_limits<T>::quiet_NaN();
-                       }
-                       return val;
-                     });
+      std::transform(
+          std::execution::par_unseq, col.begin(), col.end(), col.begin(),
+          [this, &col_index](T& x) {
+            T val{};
+            // catch NaN
+            if (!std::isnan((this->data_)[static_cast<size_t>(x)][col_index])) {
+              val =
+                  (this->data_)[static_cast<size_t>(x)][col_index];  // eval abs
+            } else {
+              return std::numeric_limits<T>::quiet_NaN();
+            }
+            return val;
+          });
 
       auto trimmed_col{
           std::views::filter(col, [](T x) { return !std::isnan(x); })};
@@ -551,7 +564,7 @@ class Dataframe {
     T sum{};
     T divisor{};
 
-    // cannot be threaded, has data race somewhere
+    // cannot be threaded, has data race
     std::for_each((this->data_).begin(),  // each row
                   (this->data_).end(),
                   [&sum, &divisor](const std::vector<T>& x) {
@@ -579,7 +592,7 @@ class Dataframe {
    * @param index index of the row to get the median
    * @return median of the desired row
    */
-  T Median(int64_t index) {
+  T Median(int64_t index) const {
     if (static_cast<uint64_t>(std::abs(index)) > this->height_) {
       std::cout << "Index out of bounds. NaN returned..." << std::endl;
       return std::numeric_limits<T>::quiet_NaN();
@@ -592,14 +605,44 @@ class Dataframe {
 
     // Handle NaN
     std::vector<T> row{};
-    std::for_each(this->data_[index].begin(), this->data_[index].end(),
-                  [this, &row](T x) {
+    std::for_each(std::execution::par_unseq, this->data_[index].begin(),
+                  this->data_[index].end(), [this, &row](T x) {
                     if (!std::isnan(x)) {
+                      util::data_mtx.lock();
                       row.push_back(x);
+                      util::data_mtx.unlock();
                     }
                   });
 
     return MedianHelper(row);
+  }
+
+  /**
+   * @brief
+   * @param col
+   * @return
+   */
+  T Median(const std::string& col_name) const {
+    // Find col index
+    auto col_index =
+        std::find(std::execution::par_unseq, (this->headers_).begin(),
+                  (this->headers_).end(), col_name) -
+        (this->headers_).begin();
+
+    if (col_index + (this->headers_).begin() == (this->headers_).end()) {
+      std::cout << "ERROR: Column not found" << std::endl;
+      return std::numeric_limits<T>::quiet_NaN();
+    }
+
+    std::vector<T> col{};
+    std::for_each(this->data_.begin(), this->data_.end(),
+                  [&col, col_index](const std::vector<T>& x) {
+                    if (!std::isnan(x[col_index])) {
+                      col.push_back(x[col_index]);
+                    }
+                  });
+
+    return MedianHelper(col);
   }
 
   /**
