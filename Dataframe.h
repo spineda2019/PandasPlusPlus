@@ -579,14 +579,6 @@ class Dataframe {
     return sum / divisor;
   }
 
-  template <class T>
-  friend inline std::ostream& operator<<(std::ostream& os,
-                                         const Dataframe<T>& df);
-
-  std::vector<T> operator[](size_t index) {
-    return this->data_[index];  // get
-  }
-
   /**
    * @brief Get mean of a row based on index
    * @param index index of the row to get the median
@@ -686,6 +678,14 @@ class Dataframe {
     std::vector<T> flat{};
     Flatten(flat);
     return MedianHelper(flat);
+  }
+
+  template <class T>
+  friend inline std::ostream& operator<<(std::ostream& os,
+                                         const Dataframe<T>& df);
+
+  std::vector<T> operator[](size_t index) {
+    return this->data_[index];  // get
   }
 
  private:
