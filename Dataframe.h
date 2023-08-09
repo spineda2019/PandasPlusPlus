@@ -15,6 +15,8 @@
 #include <type_traits>
 #include <vector>
 
+#include "Exceptions.h"
+
 namespace read_file {
 
 constexpr uint64_t padding = 5;
@@ -639,10 +641,10 @@ class Dataframe {
 
   /**
    * @brief Calculate median value of a column or row specified by it's index
-   * @param index Index of column or row 
+   * @param index Index of column or row
    * @param col_wise Whether or not the index is of a column or row
    * @return Median of selected vector
-  */
+   */
   T Median(int64_t index, bool col_wise) {
     if (!col_wise) {
       return Median(index);
@@ -666,7 +668,6 @@ class Dataframe {
                     });
 
       return MedianHelper(col);
-
     }
   }
 
@@ -678,6 +679,18 @@ class Dataframe {
     std::vector<T> flat{};
     Flatten(flat);
     return MedianHelper(flat);
+  }
+
+  /**
+   * @brief Insert row from vector at end of dataframe
+   * @param row Row to append to end of dataframe
+   */
+  void InsertRow(const std::vector<T>& row) { 
+    if (row.size() != this->width_) {
+      throw DataframeRowSizeMismatchException();
+    }
+    this->data_.push_back(row); 
+    this->height_++;
   }
 
   template <class V>
