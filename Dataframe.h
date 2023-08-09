@@ -680,9 +680,9 @@ class Dataframe {
     return MedianHelper(flat);
   }
 
-  template <class T>
+  template <class V>
   friend inline std::ostream& operator<<(std::ostream& os,
-                                         const Dataframe<T>& df);
+                                         const Dataframe<V>& df);
 
   std::vector<T> operator[](size_t index) {
     return this->data_[index];  // get
@@ -697,8 +697,8 @@ class Dataframe {
   size_t max_column_width_;
 };  // class Dataframe
 
-template <class T>
-inline std::ostream& operator<<(std::ostream& os, const Dataframe<T>& df) {
+template <class V>
+inline std::ostream& operator<<(std::ostream& os, const Dataframe<V>& df) {
   uint64_t n_rows{};
 
   if (df.Height() >= 20) {
