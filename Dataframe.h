@@ -300,9 +300,9 @@ class Dataframe {
    */
   T Mean(const std::string& col_name) const {
     if (!this->has_header_row_) {
-      std::cout << "WARNING: This frame has no headers. NaN returned..."
-                << std::endl;
-      return std::numeric_limits<T>::quiet_NaN();
+      std::cout << "WARNING: This frame has no headers."
+                << std::endl;  // throw here
+      throw ColumnNotFoundException();
     }
 
     // Find col index
@@ -313,7 +313,7 @@ class Dataframe {
 
     if (col_index + (this->headers_).begin() == (this->headers_).end()) {
       std::cout << "ERROR: Column not found" << std::endl;
-      return std::numeric_limits<T>::quiet_NaN();
+      throw ColumnNotFoundException();
     }
 
     // create a basic vector of indices to get mean
@@ -352,8 +352,8 @@ class Dataframe {
     } else {
       if (!this->has_header_row_) {
         std::cout << "WARNING: This frame has no headers. NaN returned..."
-                  << std::endl;
-        return std::numeric_limits<T>::quiet_NaN();
+                  << std::endl;  // Throw here
+        throw ColumnNotFoundException();
       }
 
       // Find col index
@@ -364,7 +364,7 @@ class Dataframe {
 
       if (col_index + (this->headers_).begin() == (this->headers_).end()) {
         std::cout << "ERROR: Column not found" << std::endl;
-        return std::numeric_limits<T>::quiet_NaN();
+        throw ColumnNotFoundException();
       }
 
       // create a basic vector of indices to get mean
@@ -410,8 +410,9 @@ class Dataframe {
   T Mean(int64_t index) const {
     // Row wise mean
     if (static_cast<uint64_t>(std::abs(index)) >= this->height_) {
-      std::cout << "Index out of bounds. NaN returned..." << std::endl;
-      return std::numeric_limits<T>::quiet_NaN();
+      std::cout << "Index out of bounds. NaN returned..."
+                << std::endl;  // throw here
+      throw DataframeIndexOutOfBoundsException();
     }
 
     if (index < 0) {
@@ -446,8 +447,9 @@ class Dataframe {
       return Mean(index);
     } else {
       if (static_cast<uint64_t>(std::abs(index)) >= this->height_) {
-        std::cout << "Index out of bounds. NaN returned..." << std::endl;
-        return std::numeric_limits<T>::quiet_NaN();
+        std::cout << "Index out of bounds. NaN returned..."
+                  << std::endl;  // throw here
+        throw DataframeIndexOutOfBoundsException();
       }
 
       if (index < 0) {
@@ -481,8 +483,9 @@ class Dataframe {
   T Mean(int64_t index, bool omit_nan, bool col_wise) const {
     if (col_wise && !omit_nan) {
       if (static_cast<uint64_t>(std::abs(index)) >= this->width_) {
-        std::cout << "Index out of bounds. NaN returned..." << std::endl;
-        return std::numeric_limits<T>::quiet_NaN();
+        std::cout << "Index out of bounds. NaN returned..."
+                  << std::endl;  // throw here
+        throw DataframeIndexOutOfBoundsException();
       }
 
       // negative indexing
@@ -512,8 +515,9 @@ class Dataframe {
              T(this->height_);
     } else if (col_wise && omit_nan) {
       if (static_cast<uint64_t>(std::abs(index)) >= this->width_) {
-        std::cout << "Index out of bounds. NaN returned..." << std::endl;
-        return std::numeric_limits<T>::quiet_NaN();
+        std::cout << "Index out of bounds. NaN returned..."
+                  << std::endl;  // throw here
+        throw DataframeIndexOutOfBoundsException();
       }
 
       // negative indexing
@@ -588,8 +592,9 @@ class Dataframe {
    */
   T Median(int64_t index) const {
     if (static_cast<uint64_t>(std::abs(index)) > this->height_) {
-      std::cout << "Index out of bounds. NaN returned..." << std::endl;
-      return std::numeric_limits<T>::quiet_NaN();
+      std::cout << "Index out of bounds. NaN returned..."
+                << std::endl;  // throw here
+      throw DataframeIndexOutOfBoundsException();
     }
 
     // negative indexing
@@ -624,8 +629,8 @@ class Dataframe {
         (this->headers_).begin();
 
     if (col_index + (this->headers_).begin() == (this->headers_).end()) {
-      std::cout << "ERROR: Column not found" << std::endl;
-      return std::numeric_limits<T>::quiet_NaN();
+      std::cout << "ERROR: Column not found" << std::endl;  // throw here
+      throw ColumnNotFoundException();
     }
 
     std::vector<T> col{};
@@ -650,8 +655,9 @@ class Dataframe {
       return Median(index);
     } else {
       if (static_cast<uint64_t>(std::abs(index)) > this->width_) {
-        std::cout << "Index out of bounds. NaN returned..." << std::endl;
-        return std::numeric_limits<T>::quiet_NaN();
+        std::cout << "Index out of bounds. NaN returned..."
+                  << std::endl;  // throw here
+        throw DataframeIndexOutOfBoundsException();
       }
 
       // negative indexing
@@ -685,11 +691,11 @@ class Dataframe {
    * @brief Insert row from vector at end of dataframe
    * @param row Row to append to end of dataframe
    */
-  void InsertRow(const std::vector<T>& row) { 
+  void InsertRow(const std::vector<T>& row) {
     if (row.size() != this->width_) {
       throw DataframeRowSizeMismatchException();
     }
-    this->data_.push_back(row); 
+    this->data_.push_back(row);
     this->height_++;
   }
 
