@@ -27,6 +27,11 @@ std::mutex data_mtx;
 template <class T>
 class Dataframe {
  private:
+  union Datatype {
+    T number;
+    bool b;
+  };
+
   /**
    * @brief Read the headers from a csv file
    * @param file_has_header: Whether or not a csv file has header row of strings
@@ -127,6 +132,7 @@ class Dataframe {
     }
     if (vec.size() % 2 != 0) {
       return vec[n];
+    } else {
     }
   }
 
@@ -697,6 +703,35 @@ class Dataframe {
     }
     this->data_.push_back(row);
     this->height_++;
+  }
+
+  /**
+   * @brief Insert an empty row to the end of a Dataframe
+   */
+  void InsertRow() {
+    std::vector<T> empty(this->width_);
+    std::fill(empty.begin(), empty.end(), T(0.0));
+
+    this->data_.push_back(empty);
+    this->height_++;
+  }
+
+  /**
+   * @brief Write an existing dataframe to a CSV file
+   * @param file_path File path to write the new file to. Must end in CSV
+   */
+  void ToCsv(const std::string& file_path) {
+    if (this->has_header_row_) {
+      // TODO: Write header row to file
+    }
+    // TODO: Write data to file
+  }
+
+  void ToTxt(const std::string& file_path) {
+    if (this->has_header_row_) {
+      // TODO: Write header row to file
+    }
+    // TODO: Write data to file
   }
 
   template <class V>
