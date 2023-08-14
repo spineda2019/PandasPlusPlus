@@ -717,10 +717,10 @@ class Dataframe {
   }
 
   /**
-   * @brief 
-   * @param header 
-   * @param col 
-  */
+   * @brief Insert a new named column into the data frame
+   * @param header String for the header of this new column
+   * @param col the vector to be inserted into the datafarme
+   */
   void InsertColumn(const std::string& header, const std::vector<T>& col) {
     if (col.size() != this->height_) {
       throw DataframeVectorSizeMismatchException();
@@ -740,10 +740,53 @@ class Dataframe {
   }
 
   /**
-   * @brief 
-  */
+   * @brief Insert a new unnamed column into the dataframe
+   * @param col The vector to insert into the dataframe
+   */
+  void InsertColumn(const std::vector<T>& col) {
+    if (col.size() != this->height_) {
+      throw DataframeVectorSizeMismatchException();
+    }
+
+    if (this->has_header_row_) {
+      throw HeaderStateMismatchException();
+    }
+
+    for (size_t row = 0; row < this->height_; row++) {
+      this->data_[row].push_back(col[row]);
+    }
+
+    this->width_++;
+  }
+
+  /**
+   * @brief Insert new empty named column into dataframe
+   */
+  void InsertColumn(const std::string& header) {
+    if (!this->has_header_row_) {
+      throw HeaderStateMismatchException();
+    }
+
+    this->headers_.push_back(header);
+
+    std::for_each(std::execution::par_unseq, this->data_.begin(),
+                  this->data_.end(),
+                  [](std::vector<T>& x) { x.push_back(T(0.0)); });
+    this->width_++;
+  }
+
+  /**
+   * @brief Insert new empty unnamed column into dataframe
+   */
   void InsertColumn() {
-    // TODO
+    if (this->has_header_row_) {
+      throw HeaderStateMismatchException();
+    }
+
+    std::for_each(std::execution::par_unseq, this->data_.begin(),
+                  this->data_.end(),
+                  [](std::vector<T>& x) { x.push_back(T(0.0)); });
+    this->width_++;
   }
 
   /**
