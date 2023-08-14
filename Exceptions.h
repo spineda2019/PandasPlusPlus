@@ -28,8 +28,8 @@ class HeaderStateMismatchException : public std::exception {
  public:
   const char* what() const throw() {
     return "Dataframe's header row and interacting operation are incompatible. "
-           "Make sure your dataframe is correctly expecting headers or "
-           "otherwise";
+           "Make sure your dataframe has headers if you are expecting or "
+           "working with them";
   }
 };
 
