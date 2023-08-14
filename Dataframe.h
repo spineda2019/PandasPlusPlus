@@ -848,6 +848,26 @@ class Dataframe {
     }
   }
 
+  /**
+   * @brief Stack this's dataframe onto a given dataframe to concatenate the two
+   * @param bottom Bottom frame to stack this on top of
+   */
+  void Stack(Dataframe<T>& bottom) { 
+    if (this->width_ != bottom.width_) {
+      throw DataframeVectorSizeMismatchException();
+    }
+
+    if (!(this->headers_ == bottom.headers_)) {
+      throw HeaderLabelMismatchException();
+    }
+
+    for (std::vector<T>& row : bottom.data_) {
+      this->data_.push_back(row);
+    }
+
+    this->height_ += bottom.height_; 
+  }
+
   template <class V>
   friend inline std::ostream& operator<<(std::ostream& os,
                                          const Dataframe<V>& df);
