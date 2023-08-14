@@ -24,4 +24,13 @@ class DataframeIndexOutOfBoundsException : public std::exception {
   }
 };
 
+class HeaderStateMismatchException : public std::exception {
+ public:
+  const char* what() const throw() {
+    return "Dataframe's header row and interacting operation are incompatible. "
+           "Make sure your dataframe is correctly expecting headers or "
+           "otherwise";
+  }
+};
+
 #endif  // CSVLIBRARY_EXCEPTIONS_H
