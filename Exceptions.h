@@ -3,10 +3,24 @@
 
 #include <exception>
 
-class DataframeRowSizeMismatchException : public std::exception {
+class DataframeVectorSizeMismatchException : public std::exception {
  public:
   const char* what() const throw() {
     return "Size of Dataframe and interacting vector are incompatible";
+  }
+};
+
+class ColumnNotFoundException : public std::exception {
+ public:
+  const char* what() const throw() {
+    return "Specified column name does not exist";
+  }
+};
+
+class DataframeIndexOutOfBoundsException : public std::exception {
+ public:
+  const char* what() const throw() {
+    return "Dataframe operation goes out of bounds of Dataframe's data";
   }
 };
 
