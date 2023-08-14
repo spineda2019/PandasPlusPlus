@@ -29,7 +29,16 @@ class HeaderStateMismatchException : public std::exception {
   const char* what() const throw() {
     return "Dataframe's header row and interacting operation are incompatible. "
            "Make sure your dataframe has headers if you are expecting or "
-           "working with them";
+           "working with them or vice versa";
+  }
+};
+
+class HeaderLabelMismatchException : public std::exception {
+ public:
+  const char* what() const throw() {
+    return "Dataframe's header row and interacting operation are incompatible. "
+           "Make sure your dataframe and what it is interacting with have the "
+           "same headers if they have them";
   }
 };
 
