@@ -720,18 +720,57 @@ class Dataframe {
    * @brief Write an existing dataframe to a CSV file
    * @param file_path File path to write the new file to. Must end in CSV
    */
-  void ToCsv(const std::string& file_path) {
+  void ToCsv(const std::string& file_path) const {
+    std::ofstream file;
+    file.open(file_path);
+
     if (this->has_header_row_) {
-      // TODO: Write header row to file
+      for (const std::string& header : this->headers_) {
+        file << header;
+        file << ",";
+      }
     }
-    // TODO: Write data to file
+
+    file << "\n";
+
+    for (const std::vector<T>& row : this->data_) {
+      for (const T element : row) {
+        file << element;
+        file << ",";
+      }
+      file << "\n";
+    }
   }
 
   void ToTxt(const std::string& file_path) {
+    std::ofstream file;
+    file.open(file_path);
+
     if (this->has_header_row_) {
       // TODO: Write header row to file
+      for (size_t i = 0;
+           i < (this->max_column_width_ * this->width_) + (2 * padding); i++) {
+        file << "_";
+      }
+      file << std::endl;
+      for (const std::string& str : this->headers_) {
+        file << std::setw(this->max_column_width_) << str << "|";
+      }
+      file << std::endl;
     }
     // TODO: Write data to file
+    for (size_t i = 0;
+         i < (this->max_column_width_ * this->width_) + (2 * padding); i++) {
+      file << "_";
+    }
+    file << std::endl;
+
+    for (size_t row = 0; row < this->height_; row++) {
+      for (size_t col = 0; col < this->width_; col++) {
+        file << std::setw(this->max_column_width_) << this->data_[row][col] << "|";
+      }
+      file << std::endl;
+    }
   }
 
   template <class V>
