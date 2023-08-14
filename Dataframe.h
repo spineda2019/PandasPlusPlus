@@ -699,7 +699,7 @@ class Dataframe {
    */
   void InsertRow(const std::vector<T>& row) {
     if (row.size() != this->width_) {
-      throw DataframeRowSizeMismatchException();
+      throw DataframeVectorSizeMismatchException();
     }
     this->data_.push_back(row);
     this->height_++;
@@ -714,6 +714,36 @@ class Dataframe {
 
     this->data_.push_back(empty);
     this->height_++;
+  }
+
+  /**
+   * @brief 
+   * @param header 
+   * @param col 
+  */
+  void InsertColumn(const std::string& header, const std::vector<T>& col) {
+    if (col.size() != this->height_) {
+      throw DataframeVectorSizeMismatchException();
+    }
+
+    if (!this->has_header_row_) {
+      throw HeaderStateMismatchException();
+    }
+
+    this->headers_.push_back(header);
+
+    for (size_t row = 0; row < this->height_; row++) {
+      this->data_[row].push_back(col[row]);
+    }
+
+    this->width_++;
+  }
+
+  /**
+   * @brief 
+  */
+  void InsertColumn() {
+    // TODO
   }
 
   /**
@@ -747,7 +777,6 @@ class Dataframe {
     file.open(file_path);
 
     if (this->has_header_row_) {
-      // TODO: Write header row to file
       for (size_t i = 0;
            i < (this->max_column_width_ * this->width_) + (2 * padding); i++) {
         file << "_";
@@ -758,17 +787,20 @@ class Dataframe {
       }
       file << std::endl;
     }
-    // TODO: Write data to file
+
     for (size_t i = 0;
          i < (this->max_column_width_ * this->width_) + (2 * padding); i++) {
       file << "_";
     }
+
     file << std::endl;
 
     for (size_t row = 0; row < this->height_; row++) {
       for (size_t col = 0; col < this->width_; col++) {
-        file << std::setw(this->max_column_width_) << this->data_[row][col] << "|";
+        file << std::setw(this->max_column_width_) << this->data_[row][col]
+             << "|";
       }
+
       file << std::endl;
     }
   }
