@@ -150,7 +150,7 @@ class Dataframe {
         has_header_row_{file_has_header} {
     std::ifstream file(file_name);
     if (!file) {
-      std::cout << "ERROR: INVALID FILE PATH" << std::endl;
+      std::cerr << "ERROR: INVALID FILE PATH" << std::endl;
       return;
     }
 
@@ -171,7 +171,7 @@ class Dataframe {
       : height_{0}, width_{0}, max_column_width_{0}, has_header_row_{true} {
     std::ifstream file(file_name);
     if (!file) {
-      std::cout << "ERROR: INVALID FILE PATH" << std::endl;
+      std::cerr << "ERROR: INVALID FILE PATH" << std::endl;
       return;
     }
 
@@ -183,6 +183,58 @@ class Dataframe {
 
     ReadVals(file);
   }
+
+  /**
+   * @brief Create a dataframe from local vectors without headers
+   * @param local_data Array to create Dataframe from
+   */
+  Dataframe(const std::vector<std::vector<T>>& local_data)
+      : height_{local_data.size()},
+        width_{local_data[0].size()},
+        data_{local_data},
+        headers_{std::vector<std::string>{}},
+        max_column_width_{15},
+        has_header_row_{false} {
+    for (std::vector<T>& row : local_data) {
+      if (row.size() != this->width_) {
+        throw BadDataframeShapeException();
+      }
+    }
+  }
+
+  /**
+   * @brief Create a dataframe from local vectors with headers
+   * @param local_data Array to create Dataframe from
+   */
+  Dataframe(const std::vector<std::vector<T>>& local_data,
+            const std::vector<std::string>& headers)
+      : height_{local_data.size()},
+        width_{local_data[0].size()},
+        data_{local_data},
+        headers_{headers},
+        max_column_width_{15},
+        has_header_row_{false} {
+    for (std::vector<T>& row : local_data) {
+      if (row.size() != this->width_) {
+        throw BadDataframeShapeException();
+      }
+    }
+
+    if (headers.size() != this->width_) {
+      throw HeaderDataSizeMismatchException();
+    }
+  }
+
+  /**
+   * @brief CTOR to make an empty dataframe
+   */
+  Dataframe()
+      : height_{0},
+        width_{0},
+        data_{std::vector<std::vector<T>>{}},
+        headers_{std::vector<std::string>{}},
+        max_column_width_{15},
+        has_header_row_{false} {}
 
   /**
    * @brief Returns the number of rows in a data frame exclusing the header row
@@ -318,7 +370,7 @@ class Dataframe {
         (this->headers_).begin();
 
     if (col_index + (this->headers_).begin() == (this->headers_).end()) {
-      std::cout << "ERROR: Column not found" << std::endl;
+      std::cerr << "ERROR: Column not found" << std::endl;
       throw ColumnNotFoundException();
     }
 
@@ -369,7 +421,7 @@ class Dataframe {
           (this->headers_).begin();
 
       if (col_index + (this->headers_).begin() == (this->headers_).end()) {
-        std::cout << "ERROR: Column not found" << std::endl;
+        std::cerr << "ERROR: Column not found" << std::endl;
         throw ColumnNotFoundException();
       }
 
@@ -635,7 +687,7 @@ class Dataframe {
         (this->headers_).begin();
 
     if (col_index + (this->headers_).begin() == (this->headers_).end()) {
-      std::cout << "ERROR: Column not found" << std::endl;  // throw here
+      std::cerr << "ERROR: Column not found" << std::endl;  // throw here
       throw ColumnNotFoundException();
     }
 
@@ -852,7 +904,7 @@ class Dataframe {
    * @brief Stack this's dataframe onto a given dataframe to concatenate the two
    * @param bottom Bottom frame to stack this on top of
    */
-  void Stack(Dataframe<T>& bottom) { 
+  void Stack(Dataframe<T>& bottom) {
     if (this->width_ != bottom.width_) {
       throw DataframeVectorSizeMismatchException();
     }
@@ -865,7 +917,7 @@ class Dataframe {
       this->data_.push_back(row);
     }
 
-    this->height_ += bottom.height_; 
+    this->height_ += bottom.height_;
   }
 
   template <class V>
