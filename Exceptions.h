@@ -42,4 +42,19 @@ class HeaderLabelMismatchException : public std::exception {
   }
 };
 
+class BadDataframeShapeException : public std::exception {
+ public:
+  const char* what() const throw() {
+    return "Vector used to create a dataframe is not a square";
+  }
+};
+
+class HeaderDataSizeMismatchException : public std::exception {
+ public:
+  const char* what() const throw() {
+    return "Width of vector used to create a dataframe and width of header row "
+           "as not equal";
+  }
+};
+
 #endif  // CSVLIBRARY_EXCEPTIONS_H
