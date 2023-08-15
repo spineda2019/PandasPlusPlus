@@ -237,6 +237,35 @@ class Dataframe {
         has_header_row_{false} {}
 
   /**
+   * @brief
+   * @param new_header_row
+   */
+  void RefactorHeaders(const std::vector<std::string>& new_header_row) {
+    if (this->has_header_row_) {
+      // check size mismatch
+      if (new_header_row.size() != this->headers_.size()) {
+        throw HeaderDataSizeMismatchException();
+      }
+
+      this->headers_ = new_header_row;
+    } else {
+      if (new_header_row.size() != this->width_) {
+        throw HeaderDataSizeMismatchException();
+      }
+
+      this->has_header_row_ = true;
+      this->headers_ = new_header_row;
+    }
+
+    // update column width for printing
+    for (const std::string& label : new_header_row) {
+      if (label.length() > this->max_column_width_) {
+        this->max_column_width_ = label.length();
+      }
+    }
+  }
+
+  /**
    * @brief Returns the number of rows in a data frame exclusing the header row
    * @return Dataframe's number of rows
    */
