@@ -20,18 +20,185 @@
 namespace read_file {
 
 constexpr uint64_t padding = 5;
-namespace util {
-std::mutex data_mtx;
+namespace detail {
+static std::mutex data_mtx;  // needs to be static for one definition rule when
+                             // used in other projects
+
+template <class T>
+inline void CalculateFrequencyDomain(const std::vector<T>& signal,
+                                     std::vector<T>& array_to_fill,
+                                     size_t sample_rate) {
+  std::iota(array_to_fill.begin(), array_to_fill.end(), T(0));
+
+  T scaler = static_cast<T>(sample_rate) / signal.size();
+  std::transform(std::execution::par, array_to_fill.begin(),
+                 array_to_fill.end(), array_to_fill.begin(),
+                 [&scaler](T& x) { return x * scaler; });
 }
+
+/**
+ * @brief Calculate Discrete Fourier Transform of a time domain waveform
+ *
+ * @param[in] signal: waveform to transform
+ * @param[out] domain_to_fill: non-empty pre-filled destination vector
+ *
+ */
+template <class T>
+inline void CalculateDiscreteFT(const std::vector<T>& signal,
+                                std::vector<std::complex<T>>& domain_to_fill) {
+  std::vector<std::vector<std::complex<T>>> k(signal.size());  // Column vec
+
+  // init k w/ 0,0
+  constexpr std::complex<T> zero_z(T(0.0), T(0.0));
+  std::fill(std::execution::par_unseq, k.begin(), k.end(),
+            std::vector<std::complex<T>>{zero_z});
+
+  // multiply k.T * k to create a square matrix
+  for (size_t row = 0; row < k.size(); row++) {
+    for (size_t col = 1; col < k.size(); col++) {
+      k[row].push_back(std::complex<T>(T(col) * T(row), T(0)));
+    }
+  }
+
+  // e = exp(-2j * pi * k.T * k / N)
+  constexpr std::complex<T> comp(T(0.0), T(-2.0));
+  const T N = T(k.size());
+  std::for_each(
+      std::execution::par_unseq, k.begin(), k.end(), [&comp, &N](auto& x) {
+        std::transform(std::execution::par, x.begin(), x.end(), x.begin(),
+                       [&comp, &N](std::complex<T>& y) {
+                         return std::pow(T(2.71828),
+                                         comp * T(3.141592654) * y / N);
+                       });
+      });
+
+  // e dot signal
+  std::transform(
+      std::execution::par_unseq, k.begin(), k.end(), domain_to_fill.begin(),
+      [&signal, &N](auto& x) {
+        const std::complex<T> dot =
+            std::inner_product(x.begin(), x.end(), signal.begin(),
+                               std::complex<T>(T(0.0), T(0.0)));
+        return dot / (std::complex<T>(N) / std::complex<T>(T(2.0), T(0.0)));
+      });
+}
+
+/**
+ * @brief Extract N frequencies from a signal from highest amplitude to lowest
+ *
+ * @param[in] signal: waveform to extract frequencies
+ * @param[out] dest: empty destination vector for extracted frequencies
+ * @param[in] sample_rate: sample rate of signal
+ * @param[in] n: desired number of frequencies to get (optional, defaults to
+ * 3)
+ *
+ */
+template <class T>
+inline void ExtractNFrequencies(const std::vector<T>& signal,
+                                std::vector<T>& dest, const size_t sample_rate,
+                                const size_t n) {
+  if (dest.size()) {
+    std::cout << "Error: Non-empty destination vector received" << std::endl;
+    return;
+  }
+
+  std::vector<T> frequency_domain(signal.size());
+  CalculateFrequencyDomain(signal, frequency_domain, sample_rate);
+
+  std::vector<std::complex<T>> dft_domain(signal.size());
+  CalculateDiscreteFT(signal, dft_domain);
+
+  std::vector<T> real(signal.size() / 2);
+  std::transform(std::execution::par_unseq, dft_domain.begin(),
+                 dft_domain.begin() + real.size(), real.begin(),
+                 [](std::complex<T>& x) { return std::abs(x); });
+
+  auto it = std::max_element(real.begin(), real.end());
+  for (size_t i = 0; i < n; i++) {
+    // value on freq domain at index of highest val in dft domain
+    dest.push_back(frequency_domain[std::distance(real.begin(), it)]);
+
+    real[std::distance(real.begin(), it)] = 0;
+
+    it = std::max_element(real.begin(), real.end());
+  }
+}
+
+/**
+ * @brief Extract N amplitudes from a signal from highest amplitude to lowest
+ *
+ * @param[in] signal: waveform to extract amplitudes
+ * @param[out] dest: empty destination vector for extracted amplitudes
+ * @param[in] n: desired number of amplitudes to get (optional, defaults to 3)
+ *
+ */
+template <class T>
+inline void ExtractNAmplitudes(const std::vector<T>& signal,
+                               std::vector<T>& dest, const size_t n) {
+  if (dest.size()) {
+    std::cout << "Error: Non-empty destination vector received" << std::endl;
+    return;
+  }
+
+  std::vector<std::complex<T>> dft_domain(signal.size());
+  CalculateDiscreteFT(signal, dft_domain);
+
+  std::vector<T> real(signal.size() / 2);
+  std::transform(std::execution::par_unseq, dft_domain.begin(),
+                 dft_domain.begin() + real.size(), real.begin(),
+                 [](std::complex<T>& x) { return std::abs(x); });
+
+  auto it = std::max_element(real.begin(), real.end());
+  for (size_t i = 0; i < n; i++) {
+    dest.push_back(*it);
+
+    real[std::distance(real.begin(), it)] = 0;
+
+    it = std::max_element(real.begin(), real.end());
+  }
+}
+
+/**
+ * @brief Extract N phases from a signal from highest amplitude to lowest
+ *
+ * @param[in] signal: waveform to extract phases
+ * @param[out] dest: empty destination vector for extracted phases
+ * @param[in] n: desired number phases to get (optional, defaults to 3)
+ *
+ */
+template <class T>
+inline void ExtractNPhases(const std::vector<T>& signal, std::vector<T>& dest,
+                           const size_t n) {
+  if (dest.size()) {
+    std::cout << "Error: Non-empty destination vector received" << std::endl;
+    return;
+  }
+
+  std::vector<std::complex<T>> dft_domain(signal.size());
+  CalculateDiscreteFT(signal, dft_domain);
+
+  std::vector<T> real(signal.size() / 2);
+  std::transform(std::execution::par_unseq, dft_domain.begin(),
+                 dft_domain.begin() + real.size(), real.begin(),
+                 [](std::complex<T>& x) { return std::abs(x); });
+
+  std::complex<T> max_el{};
+  auto it = std::max_element(real.begin(), real.end());
+  for (size_t i = 0; i < n; i++) {
+    max_el = dft_domain[std::distance(real.begin(), it)];
+
+    dest.push_back(std::atan2(max_el.imag(), max_el.real()));
+
+    real[std::distance(real.begin(), it)] = 0;
+
+    it = std::max_element(real.begin(), real.end());
+  }
+}
+}  // namespace detail
 
 template <class T>
 class Dataframe {
  private:
-  union Datatype {
-    T number;
-    bool b;
-  };
-
   /**
    * @brief Read the headers from a csv file
    * @param file_has_header: Whether or not a csv file has header row of strings
@@ -109,9 +276,9 @@ class Dataframe {
                   this->data_.end(), [&empty_vector](const std::vector<T>& x) {
                     std::for_each(x.begin(), x.end(), [&x, &empty_vector](T y) {
                       if (!std::isnan(y)) {
-                        util::data_mtx.lock();
+                        detail::data_mtx.lock();
                         empty_vector.push_back(y);
-                        util::data_mtx.unlock();
+                        detail::data_mtx.unlock();
                       }
                     });
                   });
@@ -195,7 +362,7 @@ class Dataframe {
         headers_{std::vector<std::string>{}},
         max_column_width_{15},
         has_header_row_{false} {
-    for (std::vector<T>& row : local_data) {
+    for (const std::vector<T>& row : local_data) {
       if (row.size() != this->width_) {
         throw BadDataframeShapeException();
       }
@@ -213,8 +380,8 @@ class Dataframe {
         data_{local_data},
         headers_{headers},
         max_column_width_{15},
-        has_header_row_{false} {
-    for (std::vector<T>& row : local_data) {
+        has_header_row_{true} {
+    for (const std::vector<T>& row : local_data) {
       if (row.size() != this->width_) {
         throw BadDataframeShapeException();
       }
@@ -222,6 +389,12 @@ class Dataframe {
 
     if (headers.size() != this->width_) {
       throw HeaderDataSizeMismatchException();
+    }
+
+    for (const std::string& label : headers) {
+      if (label.length() > 15) {
+        this->max_column_width_ = label.length();
+      }
     }
   }
 
@@ -235,6 +408,46 @@ class Dataframe {
         headers_{std::vector<std::string>{}},
         max_column_width_{15},
         has_header_row_{false} {}
+
+  /**
+   * @brief Create an empty dataframe with a pre-chosen size and no headers
+   * @param rows Number of desired Rows in Dataframe
+   * @param columns Number of desired Columns in Dataframe
+   */
+  Dataframe(size_t rows, size_t columns)
+      : height_{rows},
+        width_{columns},
+        data_{
+            std::vector<std::vector<T>>(rows, std::vector<T>(columns, T(0.0)))},
+        headers_{std::vector<std::string>{}},
+        max_column_width_{15},
+        has_header_row_{false} {}
+
+  /**
+   * @brief Create an empty dataframe with a pre-chosen size with headers
+   * @param rows Number of desired Rows in Dataframe
+   * @param columns Number of desired Columns in Dataframe
+   * @param headers Vector of headers of the Dataframe
+   */
+  Dataframe(size_t rows, size_t columns,
+            const std::vector<std::string>& headers)
+      : height_{rows},
+        width_{columns},
+        data_{
+            std::vector<std::vector<T>>(rows, std::vector<T>(columns, T(0.0)))},
+        headers_{headers},
+        max_column_width_{15},
+        has_header_row_{true} {
+    if (headers.size() != this->width_) {
+      throw HeaderDataSizeMismatchException();
+    }
+
+    for (const std::string& label : headers) {
+      if (label.length() > this->max_column_width_) {
+        this->max_column_width_ = label.length();
+      }
+    }
+  }
 
   /**
    * @brief
@@ -694,9 +907,9 @@ class Dataframe {
     std::for_each(std::execution::par_unseq, this->data_[index].begin(),
                   this->data_[index].end(), [this, &row](T x) {
                     if (!std::isnan(x)) {
-                      util::data_mtx.lock();
+                      detail::data_mtx.lock();
                       row.push_back(x);
-                      util::data_mtx.unlock();
+                      detail::data_mtx.unlock();
                     }
                   });
 
@@ -864,10 +1077,121 @@ class Dataframe {
       throw HeaderStateMismatchException();
     }
 
-    std::for_each(std::execution::par_unseq, this->data_.begin(),
-                  this->data_.end(),
+    std::for_each(this->data_.begin(), this->data_.end(),
                   [](std::vector<T>& x) { x.push_back(T(0.0)); });
     this->width_++;
+  }
+
+  /**
+   * @brief Create a new complex dataframe for the purpose of digital signal
+   * processing and handling complex math
+   * @return New dataframe with complex entries
+   */
+  Dataframe<std::complex<T>> ToComplex() const {
+    std::vector<std::vector<std::complex<T>>> complex_data{};
+
+    std::for_each(this->data_.begin(), this->data_.end(),
+                  [&complex_data](const std::vector<T>& row) {
+                    std::vector<std::complex<T>> new_row{};
+
+                    std::for_each(row.begin(), row.end(),
+                                  [&new_row](T element) {
+                                    new_row.push_back(std::complex<T>(element));
+                                  });
+
+                    complex_data.push_back(new_row);
+                  });
+
+    if (this->has_header_row_) {
+      return Dataframe<std::complex<T>>(complex_data, this->headers_);
+    } else {
+      return Dataframe<std::complex<T>>(complex_data);
+    }
+  }
+
+  /**
+   * @brief Get a Dataframe column in the form of a vector
+   * @param index Position of the column to get
+   * @return reference to a vector representing the column
+   */
+  std::vector<T> GetColumn(size_t index) const {
+    std::vector<T> col{};
+
+    for (size_t row = 0; row < this->height_; row++) {
+      col.push_back(this->data_[row][index]);
+    }
+
+    return col;
+  }
+
+  /**
+   * @brief Get a Dataframe column in the form of a vector
+   * @param label Header of column to get
+   * @return reference to a vector representing the column
+   */
+  std::vector<T> GetColumn(const std::string& label) const {
+    // TODO
+  }
+
+  /**
+   * @brief Change an existing column given a vector
+   * @param new_col New desired column
+   * @param index position of old column to change
+   */
+  void SetColumn(const std::vector<T>& new_col, size_t index) {
+    if (new_col.size() != this->height_) {
+      throw DataframeVectorSizeMismatchException();
+    }
+
+    for (size_t row = 0; row < this->height_; row++) {
+      this->data_[row][index] = new_col[row];
+    }
+  }
+
+  void SetColumn(const std::vector<T>& new_col, const std::string& col_name) {
+    // TODO
+  }
+
+  /**
+   * @brief Create a dataframe with requested number of relavent dsp info
+   * @param wave_table Dataframe of signals in a csv without headers
+   * @param n Amount of data (Phases, amplitudes, and frequencies) desired
+   * @return Pointer to a dataframe holding these data
+   */
+  std::unique_ptr<Dataframe<T>> GetDSPData(size_t n, size_t sample_rate) const {
+    std::unique_ptr<Dataframe<T>> to_return(new Dataframe<T>(n, n * 3));
+
+    // result will have n*3 cols and n rows
+    std::vector<T> frequencies{};
+    std::vector<T> amplitudes{};
+    std::vector<T> phases{};
+
+    for (size_t column = 0; column < this->width_; column++) {
+      std::vector<T> temporary_col = this->GetColumn(column);
+
+      std::vector<T> tmp_frequencies{};
+      std::vector<T> tmp_amplitudes{};
+      std::vector<T> tmp_phases{};
+
+      detail::ExtractNFrequencies(temporary_col, tmp_frequencies, sample_rate,
+                                  n);
+      detail::ExtractNAmplitudes(temporary_col, tmp_amplitudes, n);
+      detail::ExtractNPhases(temporary_col, tmp_phases, n);
+
+      for (T frequency : tmp_frequencies) {
+        frequencies.push_back(frequency);
+      }
+      for (T amplitude : tmp_amplitudes) {
+        amplitudes.push_back(amplitude);
+      }
+      for (T phase : tmp_phases) {
+        phases.push_back(phase);
+      }
+    }
+
+    std::vector<std::vector<T>> local_data(n, std::vector<T>(n * 3));
+
+    // TODO: Somehow change three above vectors to
   }
 
   /**
