@@ -479,6 +479,41 @@ class Dataframe {
   }
 
   /**
+   * @brief Change a Dataframe's column given a vector and a numeric index
+   * @param index Numeric index of the column to refactor
+   * @param new_column The new column replacing the old column
+   */
+  void RefactorColumn(size_t index, const std::vector<T>& new_column) {
+    if (new_column.size() != this->height_) {
+      throw DataframeVectorSizeMismatchException();
+    }
+
+    if (index >= this->width_) {
+      throw DataframeIndexOutOfBoundsException();
+    }
+
+    for (size_t row = 0; row < this->height_; row++) {
+      this->data_[row][index] = new_column[row];
+    }
+
+    // std::for_each(std::execution::par_unseq, this->data_.begin(),
+    //               this->data_.end(),
+    //               [&new_column, this, index](std::vector<T>& x) {
+    //                 x[index] = new_column[x - this->data_.begin()];
+    //               });
+  }
+
+  /**
+   * @brief Change a Dataframe's column given a vector and a numeric index
+   * @param index String index of the column to refactor
+   * @param new_column The new column replacing the old column
+   */
+  void RefactorColumn(const std::string& index,
+                      const std::vector<T>& new_column) {
+    // TODO: String indexed refactor
+  }
+
+  /**
    * @brief Returns the number of rows in a data frame exclusing the header row
    * @return Dataframe's number of rows
    */
@@ -1083,33 +1118,6 @@ class Dataframe {
   }
 
   /**
-   * @brief Create a new complex dataframe for the purpose of digital signal
-   * processing and handling complex math
-   * @return New dataframe with complex entries
-   */
-  Dataframe<std::complex<T>> ToComplex() const {
-    std::vector<std::vector<std::complex<T>>> complex_data{};
-
-    std::for_each(this->data_.begin(), this->data_.end(),
-                  [&complex_data](const std::vector<T>& row) {
-                    std::vector<std::complex<T>> new_row{};
-
-                    std::for_each(row.begin(), row.end(),
-                                  [&new_row](T element) {
-                                    new_row.push_back(std::complex<T>(element));
-                                  });
-
-                    complex_data.push_back(new_row);
-                  });
-
-    if (this->has_header_row_) {
-      return Dataframe<std::complex<T>>(complex_data, this->headers_);
-    } else {
-      return Dataframe<std::complex<T>>(complex_data);
-    }
-  }
-
-  /**
    * @brief Get a Dataframe column in the form of a vector
    * @param index Position of the column to get
    * @return reference to a vector representing the column
@@ -1159,14 +1167,40 @@ class Dataframe {
    * @return Pointer to a dataframe holding these data
    */
   std::unique_ptr<Dataframe<T>> GetDSPData(size_t n, size_t sample_rate) const {
-    std::unique_ptr<Dataframe<T>> to_return(new Dataframe<T>(n, n * 3));
+    std::vector<std::string> headers{};
 
-    // result will have n*3 cols and n rows
-    std::vector<T> frequencies{};
-    std::vector<T> amplitudes{};
-    std::vector<T> phases{};
+    for (size_t column = 1; column <= this->width_; column++) {
+      for (size_t attribute = 0; attribute < 3; attribute++) {
+        // TODO craft headers
+        std::string tmp = "Signal ";
+        tmp.append(std::to_string(column));
 
-    for (size_t column = 0; column < this->width_; column++) {
+        std::string dsp_attrubute{};
+
+        switch (attribute) {
+          case 0:
+            dsp_attrubute = " Frequencies";
+            tmp.append(dsp_attrubute);
+            break;
+          case 1:
+            dsp_attrubute = " Amplitudes";
+            tmp.append(dsp_attrubute);
+            break;
+          case 2:
+            dsp_attrubute = " Phases";
+            tmp.append(dsp_attrubute);
+            break;
+        }
+
+        headers.push_back(tmp);
+      }
+    }
+
+    std::unique_ptr<Dataframe<T>> to_return(
+        new Dataframe<T>(n, this->width_ * 3, headers));
+    // result will have this->width*3 cols and n rows
+
+    for (size_t column = 0; column < this->width_; column+=3) {
       std::vector<T> temporary_col = this->GetColumn(column);
 
       std::vector<T> tmp_frequencies{};
@@ -1178,20 +1212,16 @@ class Dataframe {
       detail::ExtractNAmplitudes(temporary_col, tmp_amplitudes, n);
       detail::ExtractNPhases(temporary_col, tmp_phases, n);
 
-      for (T frequency : tmp_frequencies) {
-        frequencies.push_back(frequency);
-      }
-      for (T amplitude : tmp_amplitudes) {
-        amplitudes.push_back(amplitude);
-      }
-      for (T phase : tmp_phases) {
-        phases.push_back(phase);
-      }
+      to_return->RefactorColumn(column, tmp_frequencies);
+      to_return->RefactorColumn(column + 1, tmp_amplitudes);
+      to_return->RefactorColumn(column + 2, tmp_phases);
+
+   
     }
 
-    std::vector<std::vector<T>> local_data(n, std::vector<T>(n * 3));
+    // TODO: Somehow change three above vectors to fit
 
-    // TODO: Somehow change three above vectors to
+    return to_return;
   }
 
   /**
