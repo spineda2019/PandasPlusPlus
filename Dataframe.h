@@ -1142,6 +1142,28 @@ class Dataframe {
   }
 
   /**
+   * @brief Get a table label given an index
+   * @param index index of desired header
+   * @return Referance to a string that holds the label
+   */
+  const std::string& GetHeader(size_t index) const {
+    if (index >= this->width_) {
+      throw DataframeIndexOutOfBoundsException();
+    }
+    return this->headers_[index];
+  }
+
+  /**
+   * @brief Get any element in the dataframe with its row and column number
+   * @param row Row number
+   * @param column Column Number
+   * @return Element stored at (row, column)
+   */
+  T GetElement(size_t row, size_t column) const {
+    return this->data_[row][column];
+  }
+
+  /**
    * @brief Change an existing column given a vector
    * @param new_col New desired column
    * @param index position of old column to change
@@ -1200,7 +1222,7 @@ class Dataframe {
         new Dataframe<T>(n, this->width_ * 3, headers));
     // result will have this->width*3 cols and n rows
 
-    for (size_t column = 0; column < this->width_; column+=3) {
+    for (size_t column = 0; column < this->width_; column += 3) {
       std::vector<T> temporary_col = this->GetColumn(column);
 
       std::vector<T> tmp_frequencies{};
@@ -1215,8 +1237,6 @@ class Dataframe {
       to_return->RefactorColumn(column, tmp_frequencies);
       to_return->RefactorColumn(column + 1, tmp_amplitudes);
       to_return->RefactorColumn(column + 2, tmp_phases);
-
-   
     }
 
     // TODO: Somehow change three above vectors to fit
