@@ -30,19 +30,26 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-typedef void* Dataframe;
+typedef struct Dataframe_t {
+  size_t height_;
+  size_t width_;
+  unsigned char has_header_row_;  // not bool to keep C/C++ compatibility
+  float** data_;                  // 2d array of Floats
+  char** headers_;                // array of strings
+  size_t max_column_width_;
+} Dataframe;
 // Float methods
 
-CCSV_API Dataframe create_dataframe_float(const char* file_path,
+CCSV_API Dataframe* create_dataframe_float(const char* file_path,
                                           int file_has_header);
 
-CCSV_API void delete_Dataframe_float(Dataframe frame);
+CCSV_API void delete_Dataframe_float(Dataframe* frame);
 
-CCSV_API void print_Dataframe_tail_float(Dataframe frame, uint64_t n_rows);
+CCSV_API void print_Dataframe_tail_float(Dataframe* frame, uint64_t n_rows);
 
-CCSV_API void print_Dataframe_head_float(Dataframe frame, uint64_t n_rows);
+CCSV_API void print_Dataframe_head_float(Dataframe* frame, uint64_t n_rows);
 
-CCSV_API float col_name_mean_float(Dataframe frame, const char* col_name);
+CCSV_API float col_name_mean_float(Dataframe* frame, const char* col_name);
 
 #ifdef __cplusplus
 }
