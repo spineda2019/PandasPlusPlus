@@ -1,11 +1,13 @@
 #include "CCSVInterface.h"
 
 #include <stdint.h>
+
 #include <iostream>
 
 #include "Dataframe.h"
 
-Dataframe* create_dataframe_float(const char* file_path, int file_has_header) {
+Dataframe* create_dataframe_float(const char* file_path,
+                                  unsigned file_has_header) {
   return reinterpret_cast<Dataframe*>(
       new read_file::Dataframe<float>(file_path, file_has_header));
 }

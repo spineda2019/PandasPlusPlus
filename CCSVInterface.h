@@ -2,6 +2,7 @@
 #define CSVLIBRARY_CCSVINTERFACE_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 #include "Dataframe.h"
 
@@ -31,17 +32,17 @@
 extern "C" {
 #endif
 typedef struct Dataframe_t {
-  size_t height_;
-  size_t width_;
+  unsigned long long height_;
+  unsigned long long width_;
   unsigned char has_header_row_;  // not bool to keep C/C++ compatibility
   float** data_;                  // 2d array of Floats
   char** headers_;                // array of strings
-  size_t max_column_width_;
+  unsigned long long max_column_width_;
 } Dataframe;
 // Float methods
 
 CCSV_API Dataframe* create_dataframe_float(const char* file_path,
-                                          int file_has_header);
+                                           unsigned char file_has_header);
 
 CCSV_API void delete_Dataframe_float(Dataframe* frame);
 
