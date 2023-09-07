@@ -1,4 +1,4 @@
-# CPPPandas
+# PandasPlusPlus
 
 I am writing this as a native library for C++ that has utilities similar to 
 python's Pandas library. I really like the pandas library, and I thought that
