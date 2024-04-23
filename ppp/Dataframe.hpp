@@ -12,7 +12,6 @@
 #include <numeric>
 #include <ranges>
 #include <string>
-#include <type_traits>
 #include <vector>
 
 #include "Exceptions.hpp"
