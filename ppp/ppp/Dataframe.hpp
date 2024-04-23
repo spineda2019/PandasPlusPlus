@@ -42,30 +42,6 @@ public:
   }
 
   /**
-   * @brief Creates a dataframe with a file path and csv headers.
-   * @param file_name: filepath to csv file you want to load
-   * @param file_has_header: whether or not your file has headers in the first
-   * row of the csv
-   */
-  Dataframe(const std::string &file_name, bool file_has_header)
-      : height_{0}, width_{0}, max_column_width_{0},
-        has_header_row_{file_has_header}, data_mtx_{} {
-    std::ifstream file(file_name);
-    if (!file) {
-      std::cerr << "ERROR: INVALID FILE PATH" << std::endl;
-      return;
-    }
-
-    ReadHeaders(this->has_header_row_, file);
-
-    if (this->max_column_width_ <= 0) {
-      this->max_column_width_ = 15;
-    }
-
-    ReadVals(file);
-  }
-
-  /**
    * @brief Create a basic Dataframe assuming file has headers
    * @param file_name: Name of csv file to read
    */
