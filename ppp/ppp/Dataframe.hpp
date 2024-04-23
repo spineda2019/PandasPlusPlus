@@ -195,7 +195,15 @@ inline void ExtractNPhases(const std::vector<T> &signal, std::vector<T> &dest,
 }
 } // namespace detail
 
-template <class T> class Dataframe {
+template <class T>
+concept AlgebraicTerm = requires(T value) {
+  value == value;
+  value = -value;
+  value = value + 1;
+  value = value - 1;
+};
+
+template <AlgebraicTerm T> class Dataframe {
 private:
   /**
    * @brief Read the headers from a csv file

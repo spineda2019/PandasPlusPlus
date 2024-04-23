@@ -1,10 +1,7 @@
 #ifndef CSVLIBRARY_CCSVINTERFACE_H
 #define CSVLIBRARY_CCSVINTERFACE_H
 
-#include <stddef.h>
 #include <stdint.h>
-
-#include "Dataframe.hpp"
 
 #if defined _WIN32 || defined __CYGWIN__
 #ifdef __GNUC__
@@ -44,13 +41,16 @@ typedef struct Dataframe_t {
 CCSV_API Dataframe *create_dataframe_float(const char *file_path,
                                            unsigned char file_has_header);
 
-CCSV_API void delete_Dataframe_float(Dataframe *frame);
+inline CCSV_API void delete_Dataframe_float(Dataframe *frame);
 
-CCSV_API void print_Dataframe_tail_float(Dataframe *frame, uint64_t n_rows);
+inline CCSV_API void print_Dataframe_tail_float(Dataframe *frame,
+                                                uint64_t n_rows);
 
-CCSV_API void print_Dataframe_head_float(Dataframe *frame, uint64_t n_rows);
+inline CCSV_API void print_Dataframe_head_float(Dataframe *frame,
+                                                uint64_t n_rows);
 
-CCSV_API float col_name_mean_float(Dataframe *frame, const char *col_name);
+inline CCSV_API float col_name_mean_float(Dataframe *frame,
+                                          const char *col_name);
 
 #ifdef __cplusplus
 }
