@@ -36,8 +36,8 @@ template <class T>
 concept AlgebraicTerm = requires(T value) {
     value == value;
     value = -value;
-    value = value + 1;
-    value = value - 1;
+    value = value + T(1);
+    value = value - T(1);
     std::cout << value;
 };
 
