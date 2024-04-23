@@ -84,15 +84,18 @@ class Matrix {
 template <AlgebraicTerm V>
 inline std::ostream &operator<<(std::ostream &stream, const Matrix<V> &matrix) {
     constexpr std::uint8_t max_height{20};
-    const std::size_t max_table_width{
-        (matrix.data_.size() * matrix.data_[0].size()) + (2 * padding)};
     std::size_t rows_to_print{};
 
-    if (std::size_t height = matrix.data_.size(); height >= max_height) {
+    if (std::size_t height = matrix.data_.size(); height == 0) {
+        return stream;
+    } else if (height >= max_height) {
         rows_to_print = max_height / 2;
     } else {
         rows_to_print = height / 2;
     }
+
+    const std::size_t max_table_width{
+        (matrix.data_.size() * matrix.data_[0].size()) + (2 * padding)};
 
     if (matrix.headers_.has_value()) {
         for (std::size_t i{0}; i < max_table_width; i++) {
