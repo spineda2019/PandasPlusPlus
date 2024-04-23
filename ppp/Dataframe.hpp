@@ -20,8 +20,8 @@ namespace read_file {
 
 constexpr uint64_t padding = 5;
 namespace detail {
-static std::mutex data_mtx; // needs to be static for one definition rule when
-                            // used in other projects
+static std::mutex data_mtx{}; // needs to be static for one definition rule when
+                              // used in other projects
 
 template <class T>
 inline void CalculateFrequencyDomain(const std::vector<T> &signal,
