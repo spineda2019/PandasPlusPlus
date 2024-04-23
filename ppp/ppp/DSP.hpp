@@ -5,14 +5,10 @@
 #include <complex>
 #include <execution>
 #include <iostream>
-#include <mutex>
 #include <numeric>
 #include <vector>
 namespace ppp {
 namespace detail {
-static std::mutex data_mtx{}; // needs to be static for one definition rule when
-                              // used in other projects
-
 template <class T>
 inline void CalculateFrequencyDomain(const std::vector<T> &signal,
                                      std::vector<T> &array_to_fill,

@@ -103,16 +103,16 @@ private:
    * @param empty_vector: Empty vector to fill with dataframe values
    */
   void Flatten(std::vector<T> &empty_vector) const {
-    std::for_each(std::execution::par_unseq, this->data_.begin(),
-                  this->data_.end(), [&empty_vector](const std::vector<T> &x) {
-                    std::for_each(x.begin(), x.end(), [&x, &empty_vector](T y) {
-                      if (!std::isnan(y)) {
-                        detail::data_mtx.lock();
-                        empty_vector.push_back(y);
-                        detail::data_mtx.unlock();
-                      }
-                    });
-                  });
+    std::for_each(
+        std::execution::par_unseq, this->data_.begin(), this->data_.end(),
+        [this, &empty_vector](const std::vector<T> &x) {
+          std::for_each(x.begin(), x.end(), [this, &x, &empty_vector](T y) {
+            if (!std::isnan(y)) {
+              std::lock_guard lock{data_mtx_};
+              empty_vector.push_back(y);
+            }
+          });
+        });
   }
 
   /**
@@ -143,7 +143,7 @@ public:
    */
   Dataframe(const std::string &file_name, bool file_has_header)
       : height_{0}, width_{0}, max_column_width_{0},
-        has_header_row_{file_has_header} {
+        has_header_row_{file_has_header}, data_mtx_{} {
     std::ifstream file(file_name);
     if (!file) {
       std::cerr << "ERROR: INVALID FILE PATH" << std::endl;
@@ -164,7 +164,8 @@ public:
    * @param file_name: Name of csv file to read
    */
   Dataframe(const std::string &file_name)
-      : height_{0}, width_{0}, max_column_width_{0}, has_header_row_{true} {
+      : height_{0}, width_{0}, max_column_width_{0}, has_header_row_{true},
+        data_mtx_{} {
     std::ifstream file(file_name);
     if (!file) {
       std::cerr << "ERROR: INVALID FILE PATH" << std::endl;
@@ -187,7 +188,7 @@ public:
   Dataframe(const std::vector<std::vector<T>> &local_data)
       : height_{local_data.size()}, width_{local_data[0].size()},
         data_{local_data}, headers_{std::vector<std::string>{}},
-        max_column_width_{15}, has_header_row_{false} {
+        max_column_width_{15}, has_header_row_{false}, data_mtx_{} {
     for (const std::vector<T> &row : local_data) {
       if (row.size() != this->width_) {
         throw BadDataframeShapeException();
@@ -203,7 +204,7 @@ public:
             const std::vector<std::string> &headers)
       : height_{local_data.size()}, width_{local_data[0].size()},
         data_{local_data}, headers_{headers}, max_column_width_{15},
-        has_header_row_{true} {
+        has_header_row_{true}, data_mtx_{} {
     for (const std::vector<T> &row : local_data) {
       if (row.size() != this->width_) {
         throw BadDataframeShapeException();
@@ -227,7 +228,7 @@ public:
   Dataframe()
       : height_{0}, width_{0}, data_{std::vector<std::vector<T>>{}},
         headers_{std::vector<std::string>{}}, max_column_width_{15},
-        has_header_row_{false} {}
+        has_header_row_{false}, data_mtx_{} {}
 
   /**
    * @brief Create an empty dataframe with a pre-chosen size and no headers
@@ -239,7 +240,7 @@ public:
         data_{
             std::vector<std::vector<T>>(rows, std::vector<T>(columns, T(0.0)))},
         headers_{std::vector<std::string>{}}, max_column_width_{15},
-        has_header_row_{false} {}
+        has_header_row_{false}, data_mtx_{} {}
 
   /**
    * @brief Create an empty dataframe with a pre-chosen size with headers
@@ -252,7 +253,8 @@ public:
       : height_{rows}, width_{columns},
         data_{
             std::vector<std::vector<T>>(rows, std::vector<T>(columns, T(0.0)))},
-        headers_{headers}, max_column_width_{15}, has_header_row_{true} {
+        headers_{headers}, max_column_width_{15}, has_header_row_{true},
+        data_mtx_{} {
     if (headers.size() != this->width_) {
       throw HeaderDataSizeMismatchException();
     }
@@ -763,9 +765,8 @@ public:
     std::for_each(std::execution::par_unseq, this->data_[index].begin(),
                   this->data_[index].end(), [this, &row](T x) {
                     if (!std::isnan(x)) {
-                      detail::data_mtx.lock();
+                      std::lock_guard lock{data_mtx_};
                       row.push_back(x);
-                      detail::data_mtx.unlock();
                     }
                   });
 
@@ -1154,6 +1155,7 @@ public:
   }
 
 private:
+  std::mutex data_mtx_;
   std::size_t height_;
   std::size_t width_;
   bool has_header_row_;
