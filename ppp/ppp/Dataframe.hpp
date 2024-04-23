@@ -18,7 +18,7 @@
 
 namespace ppp {
 
-constexpr uint64_t padding = 5;
+constexpr std::uint64_t padding = 5;
 namespace detail {
 static std::mutex data_mtx{}; // needs to be static for one definition rule when
                               // used in other projects
@@ -26,7 +26,7 @@ static std::mutex data_mtx{}; // needs to be static for one definition rule when
 template <class T>
 inline void CalculateFrequencyDomain(const std::vector<T> &signal,
                                      std::vector<T> &array_to_fill,
-                                     size_t sample_rate) {
+                                     std::size_t sample_rate) {
   std::iota(array_to_fill.begin(), array_to_fill.end(), T(0));
 
   T scaler = static_cast<T>(sample_rate) / signal.size();
@@ -53,8 +53,8 @@ inline void CalculateDiscreteFT(const std::vector<T> &signal,
             std::vector<std::complex<T>>{zero_z});
 
   // multiply k.T * k to create a square matrix
-  for (size_t row = 0; row < k.size(); row++) {
-    for (size_t col = 1; col < k.size(); col++) {
+  for (std::size_t row = 0; row < k.size(); row++) {
+    for (std::size_t col = 1; col < k.size(); col++) {
       k[row].push_back(std::complex<T>(T(col) * T(row), T(0)));
     }
   }
@@ -93,9 +93,9 @@ inline void CalculateDiscreteFT(const std::vector<T> &signal,
  *
  */
 template <class T>
-inline void ExtractNFrequencies(const std::vector<T> &signal,
-                                std::vector<T> &dest, const size_t sample_rate,
-                                const size_t n) {
+inline void
+ExtractNFrequencies(const std::vector<T> &signal, std::vector<T> &dest,
+                    const std::size_t sample_rate, const std::size_t n) {
   if (dest.size()) {
     std::cout << "Error: Non-empty destination vector received" << std::endl;
     return;
@@ -113,7 +113,7 @@ inline void ExtractNFrequencies(const std::vector<T> &signal,
                  [](std::complex<T> &x) { return std::abs(x); });
 
   auto it = std::max_element(real.begin(), real.end());
-  for (size_t i = 0; i < n; i++) {
+  for (std::size_t i = 0; i < n; i++) {
     // value on freq domain at index of highest val in dft domain
     dest.push_back(frequency_domain[std::distance(real.begin(), it)]);
 
@@ -133,7 +133,7 @@ inline void ExtractNFrequencies(const std::vector<T> &signal,
  */
 template <class T>
 inline void ExtractNAmplitudes(const std::vector<T> &signal,
-                               std::vector<T> &dest, const size_t n) {
+                               std::vector<T> &dest, const std::size_t n) {
   if (dest.size()) {
     std::cout << "Error: Non-empty destination vector received" << std::endl;
     return;
@@ -148,7 +148,7 @@ inline void ExtractNAmplitudes(const std::vector<T> &signal,
                  [](std::complex<T> &x) { return std::abs(x); });
 
   auto it = std::max_element(real.begin(), real.end());
-  for (size_t i = 0; i < n; i++) {
+  for (std::size_t i = 0; i < n; i++) {
     dest.push_back(*it);
 
     real[std::distance(real.begin(), it)] = 0;
@@ -167,7 +167,7 @@ inline void ExtractNAmplitudes(const std::vector<T> &signal,
  */
 template <class T>
 inline void ExtractNPhases(const std::vector<T> &signal, std::vector<T> &dest,
-                           const size_t n) {
+                           const std::size_t n) {
   if (dest.size()) {
     std::cout << "Error: Non-empty destination vector received" << std::endl;
     return;
@@ -183,7 +183,7 @@ inline void ExtractNPhases(const std::vector<T> &signal, std::vector<T> &dest,
 
   std::complex<T> max_el{};
   auto it = std::max_element(real.begin(), real.end());
-  for (size_t i = 0; i < n; i++) {
+  for (std::size_t i = 0; i < n; i++) {
     max_el = dft_domain[std::distance(real.begin(), it)];
 
     dest.push_back(std::atan2(max_el.imag(), max_el.real()));
@@ -214,7 +214,7 @@ private:
     if (file_has_header) {
       std::string header_row;
       std::getline(file, header_row);
-      size_t pos{};
+      std::size_t pos{};
 
       // parse commas in single row
       while ((pos = header_row.find(",")) != std::string::npos) {
@@ -241,8 +241,8 @@ private:
     std::string string_value{};
     std::string sub_string_value{};
 
-    size_t row = 0;
-    size_t pos = 0;
+    std::size_t row = 0;
+    std::size_t pos = 0;
     while (std::getline(file, string_value)) { // Rows
       this->data_.push_back(std::vector<T>{});
 
@@ -296,7 +296,7 @@ private:
    * @return median of vector vec
    */
   T MedianHelper(std::vector<T> &vec) const {
-    size_t n = vec.size() / 2;
+    std::size_t n = vec.size() / 2;
     std::nth_element(vec.begin(), vec.begin() + n, vec.end());
 
     if (vec.size() % 2 == 0) {
@@ -409,7 +409,7 @@ public:
    * @param rows Number of desired Rows in Dataframe
    * @param columns Number of desired Columns in Dataframe
    */
-  Dataframe(size_t rows, size_t columns)
+  Dataframe(std::size_t rows, std::size_t columns)
       : height_{rows}, width_{columns},
         data_{
             std::vector<std::vector<T>>(rows, std::vector<T>(columns, T(0.0)))},
@@ -422,7 +422,7 @@ public:
    * @param columns Number of desired Columns in Dataframe
    * @param headers Vector of headers of the Dataframe
    */
-  Dataframe(size_t rows, size_t columns,
+  Dataframe(std::size_t rows, std::size_t columns,
             const std::vector<std::string> &headers)
       : height_{rows}, width_{columns},
         data_{
@@ -473,7 +473,7 @@ public:
    * @param index Numeric index of the column to refactor
    * @param new_column The new column replacing the old column
    */
-  void RefactorColumn(size_t index, const std::vector<T> &new_column) {
+  void RefactorColumn(std::size_t index, const std::vector<T> &new_column) {
     if (new_column.size() != this->height_) {
       throw DataframeVectorSizeMismatchException();
     }
@@ -482,7 +482,7 @@ public:
       throw DataframeIndexOutOfBoundsException();
     }
 
-    for (size_t row = 0; row < this->height_; row++) {
+    for (std::size_t row = 0; row < this->height_; row++) {
       this->data_[row][index] = new_column[row];
     }
 
@@ -507,13 +507,13 @@ public:
    * @brief Returns the number of rows in a data frame exclusing the header row
    * @return Dataframe's number of rows
    */
-  uint64_t Height() const { return this->height_; }
+  std::uint64_t Height() const { return this->height_; }
 
   /**
    * @brief Returns the number of columns in a data frame
    * @return Frame's number of columns
    */
-  uint64_t Width() const { return this->width_; }
+  std::uint64_t Width() const { return this->width_; }
 
   /**
    * @brief Returns if the dataframe has a row of column headers or not
@@ -526,7 +526,7 @@ public:
    * top
    * @param n_rows: Number of rows to be printed
    */
-  void PrintData(uint64_t n_rows) const {
+  void PrintData(std::uint64_t n_rows) const {
     if (n_rows > this->height_) {
       std::cout << "More rows requested than exist" << std::endl;
       return;
@@ -538,7 +538,7 @@ public:
     }
 
     if (this->HasHeaderRow()) {
-      for (size_t i = 0;
+      for (std::size_t i = 0;
            i < (this->max_column_width_ * this->width_) + (2 * padding); i++) {
         std::cout << "_";
       }
@@ -552,7 +552,7 @@ public:
       std::cout << std::endl;
     }
 
-    for (size_t i = 0;
+    for (std::size_t i = 0;
          i < (this->max_column_width_ * this->width_) + (2 * padding); i++) {
       std::cout << "_";
     }
@@ -560,8 +560,8 @@ public:
     std::cout << std::endl;
 
     // Df Vals
-    for (size_t row = 0; row < n_rows; row++) {
-      for (size_t col = 0; col < this->width_; col++) {
+    for (std::size_t row = 0; row < n_rows; row++) {
+      for (std::size_t col = 0; col < this->width_; col++) {
         std::cout << std::setw(this->max_column_width_) << this->data_[row][col]
                   << "|";
       }
@@ -574,7 +574,7 @@ public:
    * at the n to last row
    * @param n_rows: number of rows to print
    */
-  void PrintTail(uint64_t n_rows) const {
+  void PrintTail(std::uint64_t n_rows) const {
     if (n_rows > this->height_) {
       std::cout << "More rows requested than exist" << std::endl;
       return;
@@ -586,7 +586,7 @@ public:
     }
 
     if (this->HasHeaderRow()) {
-      for (size_t i = 0;
+      for (std::size_t i = 0;
            i < (this->max_column_width_ * this->width_) + (2 * padding); i++) {
         std::cout << "_";
       }
@@ -600,7 +600,7 @@ public:
       std::cout << std::endl;
     }
 
-    for (size_t i = 0;
+    for (std::size_t i = 0;
          i < (this->max_column_width_ * this->width_) + (2 * padding); i++) {
       std::cout << "_";
     }
@@ -608,8 +608,8 @@ public:
     std::cout << std::endl;
 
     // Df vals
-    for (size_t row = this->height_ - n_rows; row < this->height_; row++) {
-      for (size_t col = 0; col < this->width_; col++) {
+    for (std::size_t row = this->height_ - n_rows; row < this->height_; row++) {
+      for (std::size_t col = 0; col < this->width_; col++) {
         std::cout << std::setw(this->max_column_width_) << this->data_[row][col]
                   << "|";
       }
@@ -651,8 +651,9 @@ public:
         [this, &col_index](T &x) {
           T val{};
           // catch NaN
-          if (!std::isnan((this->data_)[static_cast<size_t>(x)][col_index])) {
-            val = (this->data_)[static_cast<size_t>(x)][col_index];
+          if (!std::isnan(
+                  (this->data_)[static_cast<std::size_t>(x)][col_index])) {
+            val = (this->data_)[static_cast<std::size_t>(x)][col_index];
           } else {
             val = T(0.0);
           }
@@ -703,9 +704,10 @@ public:
           [this, &col_index](T &x) {
             T val{};
             // catch NaN
-            if (!std::isnan((this->data_)[static_cast<size_t>(x)][col_index])) {
-              val =
-                  (this->data_)[static_cast<size_t>(x)][col_index]; // eval abs
+            if (!std::isnan(
+                    (this->data_)[static_cast<std::size_t>(x)][col_index])) {
+              val = (this->data_)[static_cast<std::size_t>(x)]
+                                 [col_index]; // eval abs
             } else {
               return std::numeric_limits<T>::quiet_NaN();
             }
@@ -715,8 +717,8 @@ public:
       auto trimmed_col{
           std::views::filter(col, [](T x) { return !std::isnan(x); })};
 
-      uint64_t nans = std::count_if(col.begin(), col.end(),
-                                    [](T x) { return std::isnan(x); });
+      std::uint64_t nans = std::count_if(col.begin(), col.end(),
+                                         [](T x) { return std::isnan(x); });
 
       if (this->height_ - nans == 0) {
         return 0;
@@ -734,7 +736,7 @@ public:
    */
   T Mean(int64_t index) const {
     // Row wise mean
-    if (static_cast<uint64_t>(std::abs(index)) >= this->height_) {
+    if (static_cast<std::uint64_t>(std::abs(index)) >= this->height_) {
       std::cout << "Index out of bounds. NaN returned..."
                 << std::endl; // throw here
       throw DataframeIndexOutOfBoundsException();
@@ -771,7 +773,7 @@ public:
     if (!omit_nan) {
       return Mean(index);
     } else {
-      if (static_cast<uint64_t>(std::abs(index)) >= this->height_) {
+      if (static_cast<std::uint64_t>(std::abs(index)) >= this->height_) {
         std::cout << "Index out of bounds. NaN returned..."
                   << std::endl; // throw here
         throw DataframeIndexOutOfBoundsException();
@@ -785,7 +787,7 @@ public:
       auto row{std::ranges::views::filter(
           this->data_[index], [](const T &x) { return !std::isnan(x); })};
 
-      uint64_t nans =
+      std::uint64_t nans =
           std::count_if(this->data_[index].begin(), this->data_[index].end(),
                         [](T x) { return std::isnan(x); });
 
@@ -807,7 +809,7 @@ public:
    */
   T Mean(int64_t index, bool omit_nan, bool col_wise) const {
     if (col_wise && !omit_nan) {
-      if (static_cast<uint64_t>(std::abs(index)) >= this->width_) {
+      if (static_cast<std::uint64_t>(std::abs(index)) >= this->width_) {
         std::cout << "Index out of bounds. NaN returned..."
                   << std::endl; // throw here
         throw DataframeIndexOutOfBoundsException();
@@ -829,8 +831,10 @@ public:
           [this, &index](T &x) {
             T val{};
             // catch NaN
-            if (!std::isnan((this->data_)[static_cast<size_t>(x)][index])) {
-              val = (this->data_)[static_cast<size_t>(x)][index]; // eval abs
+            if (!std::isnan(
+                    (this->data_)[static_cast<std::size_t>(x)][index])) {
+              val =
+                  (this->data_)[static_cast<std::size_t>(x)][index]; // eval abs
             } else {
               val = T(0.0);
             }
@@ -839,7 +843,7 @@ public:
       return std::reduce(std::execution::par_unseq, col.begin(), col.end()) /
              T(this->height_);
     } else if (col_wise && omit_nan) {
-      if (static_cast<uint64_t>(std::abs(index)) >= this->width_) {
+      if (static_cast<std::uint64_t>(std::abs(index)) >= this->width_) {
         std::cout << "Index out of bounds. NaN returned..."
                   << std::endl; // throw here
         throw DataframeIndexOutOfBoundsException();
@@ -861,8 +865,10 @@ public:
           [this, &index](T &x) {
             T val{};
             // catch NaN
-            if (!std::isnan((this->data_)[static_cast<size_t>(x)][index])) {
-              val = (this->data_)[static_cast<size_t>(x)][index]; // eval abs
+            if (!std::isnan(
+                    (this->data_)[static_cast<std::size_t>(x)][index])) {
+              val =
+                  (this->data_)[static_cast<std::size_t>(x)][index]; // eval abs
             } else {
               return std::numeric_limits<T>::quiet_NaN();
             }
@@ -872,8 +878,8 @@ public:
       auto trimmed_col{
           std::views::filter(col, [](T x) { return !std::isnan(x); })};
 
-      uint64_t nans = std::count_if(col.begin(), col.end(),
-                                    [](T x) { return std::isnan(x); });
+      std::uint64_t nans = std::count_if(col.begin(), col.end(),
+                                         [](T x) { return std::isnan(x); });
 
       if (this->height_ - nans == 0) {
         return 0;
@@ -916,7 +922,7 @@ public:
    * @return median of the desired row
    */
   T Median(int64_t index) const {
-    if (static_cast<uint64_t>(std::abs(index)) > this->height_) {
+    if (static_cast<std::uint64_t>(std::abs(index)) > this->height_) {
       std::cout << "Index out of bounds. NaN returned..."
                 << std::endl; // throw here
       throw DataframeIndexOutOfBoundsException();
@@ -979,7 +985,7 @@ public:
     if (!col_wise) {
       return Median(index);
     } else {
-      if (static_cast<uint64_t>(std::abs(index)) > this->width_) {
+      if (static_cast<std::uint64_t>(std::abs(index)) > this->width_) {
         std::cout << "Index out of bounds. NaN returned..."
                   << std::endl; // throw here
         throw DataframeIndexOutOfBoundsException();
@@ -1051,7 +1057,7 @@ public:
 
     this->headers_.push_back(header);
 
-    for (size_t row = 0; row < this->height_; row++) {
+    for (std::size_t row = 0; row < this->height_; row++) {
       this->data_[row].push_back(col[row]);
     }
 
@@ -1071,7 +1077,7 @@ public:
       throw HeaderStateMismatchException();
     }
 
-    for (size_t row = 0; row < this->height_; row++) {
+    for (std::size_t row = 0; row < this->height_; row++) {
       this->data_[row].push_back(col[row]);
     }
 
@@ -1112,10 +1118,10 @@ public:
    * @param index Position of the column to get
    * @return reference to a vector representing the column
    */
-  std::vector<T> GetColumn(size_t index) const {
+  std::vector<T> GetColumn(std::size_t index) const {
     std::vector<T> col{};
 
-    for (size_t row = 0; row < this->height_; row++) {
+    for (std::size_t row = 0; row < this->height_; row++) {
       col.push_back(this->data_[row][index]);
     }
 
@@ -1136,7 +1142,7 @@ public:
    * @param index index of desired header
    * @return Referance to a string that holds the label
    */
-  const std::string &GetHeader(size_t index) const {
+  const std::string &GetHeader(std::size_t index) const {
     if (index >= this->width_) {
       throw DataframeIndexOutOfBoundsException();
     }
@@ -1149,7 +1155,7 @@ public:
    * @param column Column Number
    * @return Element stored at (row, column)
    */
-  T GetElement(size_t row, size_t column) const {
+  T GetElement(std::size_t row, std::size_t column) const {
     return this->data_[row][column];
   }
 
@@ -1158,12 +1164,12 @@ public:
    * @param new_col New desired column
    * @param index position of old column to change
    */
-  void SetColumn(const std::vector<T> &new_col, size_t index) {
+  void SetColumn(const std::vector<T> &new_col, std::size_t index) {
     if (new_col.size() != this->height_) {
       throw DataframeVectorSizeMismatchException();
     }
 
-    for (size_t row = 0; row < this->height_; row++) {
+    for (std::size_t row = 0; row < this->height_; row++) {
       this->data_[row][index] = new_col[row];
     }
   }
@@ -1178,11 +1184,12 @@ public:
    * @param n Amount of data (Phases, amplitudes, and frequencies) desired
    * @return Pointer to a dataframe holding these data
    */
-  std::unique_ptr<Dataframe<T>> GetDSPData(size_t n, size_t sample_rate) const {
+  std::unique_ptr<Dataframe<T>> GetDSPData(std::size_t n,
+                                           std::size_t sample_rate) const {
     std::vector<std::string> headers{};
 
-    for (size_t column = 1; column <= this->width_; column++) {
-      for (size_t attribute = 0; attribute < 3; attribute++) {
+    for (std::size_t column = 1; column <= this->width_; column++) {
+      for (std::size_t attribute = 0; attribute < 3; attribute++) {
         // TODO craft headers
         std::string tmp = "Signal ";
         tmp.append(std::to_string(column));
@@ -1212,7 +1219,7 @@ public:
         new Dataframe<T>(n, this->width_ * 3, headers));
     // result will have this->width*3 cols and n rows
 
-    for (size_t column = 0; column < this->width_; column += 3) {
+    for (std::size_t column = 0; column < this->width_; column += 3) {
       std::vector<T> temporary_col = this->GetColumn(column);
 
       std::vector<T> tmp_frequencies{};
@@ -1265,7 +1272,7 @@ public:
     file.open(file_path);
 
     if (this->has_header_row_) {
-      for (size_t i = 0;
+      for (std::size_t i = 0;
            i < (this->max_column_width_ * this->width_) + (2 * padding); i++) {
         file << "_";
       }
@@ -1276,15 +1283,15 @@ public:
       file << std::endl;
     }
 
-    for (size_t i = 0;
+    for (std::size_t i = 0;
          i < (this->max_column_width_ * this->width_) + (2 * padding); i++) {
       file << "_";
     }
 
     file << std::endl;
 
-    for (size_t row = 0; row < this->height_; row++) {
-      for (size_t col = 0; col < this->width_; col++) {
+    for (std::size_t row = 0; row < this->height_; row++) {
+      for (std::size_t col = 0; col < this->width_; col++) {
         file << std::setw(this->max_column_width_) << this->data_[row][col]
              << "|";
       }
@@ -1317,22 +1324,22 @@ public:
   friend inline std::ostream &operator<<(std::ostream &os,
                                          const Dataframe<V> &df);
 
-  std::vector<T> operator[](size_t index) {
+  std::vector<T> operator[](std::size_t index) {
     return this->data_[index]; // get
   }
 
 private:
-  size_t height_;
-  size_t width_;
+  std::size_t height_;
+  std::size_t width_;
   bool has_header_row_;
   std::vector<std::vector<T>> data_;
   std::vector<std::string> headers_;
-  size_t max_column_width_;
+  std::size_t max_column_width_;
 }; // class Dataframe
 
 template <class V>
 inline std::ostream &operator<<(std::ostream &os, const Dataframe<V> &df) {
-  uint64_t n_rows{};
+  std::uint64_t n_rows{};
 
   if (df.Height() >= 20) {
     n_rows = 10;
@@ -1342,8 +1349,8 @@ inline std::ostream &operator<<(std::ostream &os, const Dataframe<V> &df) {
 
   // top
   if (df.HasHeaderRow()) {
-    for (size_t i = 0; i < (df.max_column_width_ * df.width_) + (2 * padding);
-         i++) {
+    for (std::size_t i = 0;
+         i < (df.max_column_width_ * df.width_) + (2 * padding); i++) {
       os << "_";
     }
     os << std::endl;
@@ -1353,14 +1360,14 @@ inline std::ostream &operator<<(std::ostream &os, const Dataframe<V> &df) {
     os << std::endl;
   }
 
-  for (size_t i = 0; i < (df.max_column_width_ * df.width_) + (2 * padding);
-       i++) {
+  for (std::size_t i = 0;
+       i < (df.max_column_width_ * df.width_) + (2 * padding); i++) {
     os << "_";
   }
   os << std::endl;
 
-  for (size_t row = 0; row < n_rows; row++) {
-    for (size_t col = 0; col < df.width_; col++) {
+  for (std::size_t row = 0; row < n_rows; row++) {
+    for (std::size_t col = 0; col < df.width_; col++) {
       os << std::setw(df.max_column_width_) << df.data_[row][col] << "|";
     }
     os << std::endl;
@@ -1372,8 +1379,8 @@ inline std::ostream &operator<<(std::ostream &os, const Dataframe<V> &df) {
     os << std::endl << std::endl;
 
     // bottom
-    for (size_t row = df.height_ - n_rows; row < df.height_; row++) {
-      for (size_t col = 0; col < df.width_; col++) {
+    for (std::size_t row = df.height_ - n_rows; row < df.height_; row++) {
+      for (std::size_t col = 0; col < df.width_; col++) {
         os << std::setw(df.max_column_width_) << df.data_[row][col] << "|";
       }
       os << std::endl;
