@@ -27,10 +27,16 @@ class Matrix {
           headers_{std::nullopt},
           max_column_width_{15} {}
 
-    Matrix(std::size_t rows, std::size_t columns) noexcept
+    Matrix<T>(std::size_t rows, std::size_t columns) noexcept
         : data_mutex_{},
           data_{std::vector<std::vector<T>>(rows,
                                             std::vector<T>(columns, T(0.0)))},
+          headers_{std::nullopt},
+          max_column_width_{15} {}
+
+    Matrix(std::vector<std::vector<T>> &&data) noexcept
+        : data_mutex_{},
+          data_{data},
           headers_{std::nullopt},
           max_column_width_{15} {}
 

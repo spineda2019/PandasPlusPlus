@@ -1,12 +1,9 @@
-#include <ppp/Dataframe.hpp>
+#include <ppp/Matrix.hpp>
 #include <vector>
+
 int main(void) {
-  std::vector<std::vector<float>> small{
-      {3, 3},
-      {4, 4},
-  };
-
-  ppp::Dataframe simple{small};
-
-  std::cout << simple << std::endl;
+    ppp::Matrix simple{std::vector{
+        std::vector<float>{4.0},
+        std::vector<float>{4.0},
+    }};
 }
