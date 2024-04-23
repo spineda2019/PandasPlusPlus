@@ -1,15 +1,11 @@
 cmake_minimum_required(VERSION 3.19)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-project(libppp DESCRIPTION "Pandas Plus Plus Library")
+project(libppp DESCRIPTION "Pandas Plus Plus Library" LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(PPP_SOURCES
-    "CCSVInterface.cpp"
-    "CCSVInterface.hpp"
-    "Dataframe.hpp"
-    "Exceptions.hpp"
-    )
+add_library(libppp INTERFACE)
 
-add_library(libppp ${MODULE_BUILD_TYPE} ${PPP_SOURCES})
+target_include_directories(libppp INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/ppp")
