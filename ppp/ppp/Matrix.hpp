@@ -60,6 +60,12 @@ class Matrix {
           headers_{std::nullopt},
           max_column_width_{15} {}
 
+    Matrix(std::vector<std::vector<T>> data) noexcept
+        : data_mutex_{},
+          data_{data},
+          headers_{std::nullopt},
+          max_column_width_{15} {}
+
  private:
     std::mutex data_mutex_;
     std::vector<std::vector<T>> data_;
