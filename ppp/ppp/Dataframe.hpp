@@ -9,6 +9,7 @@
 #include <iostream>
 #include <mutex>
 #include <numeric>
+#include <optional>
 #include <ranges>
 #include <string>
 #include <vector>
@@ -29,112 +30,17 @@ concept AlgebraicTerm = requires(T value) {
 };
 
 template <AlgebraicTerm T> class Dataframe {
-private:
-  /**
-   * @brief Read the headers from a csv file
-   * @param file_has_header: Whether or not a csv file has header row of strings
-   * @param file: (non-const) reference to a file stream to read headers
-   */
-  void ReadHeaders(bool file_has_header, std::ifstream &file) {
-    if (file_has_header) {
-      std::string header_row;
-      std::getline(file, header_row);
-      std::size_t pos{};
-
-      // parse commas in single row
-      while ((pos = header_row.find(",")) != std::string::npos) {
-        this->headers_.push_back(header_row.substr(0, header_row.find(",")));
-
-        if (header_row.substr(0, header_row.find(",")).length() >
-            this->max_column_width_) {
-          this->max_column_width_ =
-              header_row.substr(0, header_row.find(",")).length() + padding;
-        }
-
-        header_row.erase(0, pos + 1);
-      }
-      this->headers_.push_back(
-          header_row); // push last val since it will no longer have a comma
-    }
-  }
-
-  /**
-   * @brief Read data from csv and put it into the dataframe
-   * @param file: (non-const) reference to the file to read from
-   */
-  void ReadVals(std::ifstream &file) {
-    std::string string_value{};
-    std::string sub_string_value{};
-
-    std::size_t row = 0;
-    std::size_t pos = 0;
-    while (std::getline(file, string_value)) { // Rows
-      this->data_.push_back(std::vector<T>{});
-
-      while ((pos = string_value.find(",")) != std::string::npos) { // Cols
-        this->width_++;
-
-        try {
-          this->data_[row].push_back(
-              T(std::stof(string_value.substr(0, string_value.find(",")))));
-        } catch (...) {
-          this->data_[row].push_back(std::numeric_limits<T>::quiet_NaN());
-        }
-        string_value.erase(0, pos + 1);
-      }
-
-      // store last col val where no more comma is found
-      try {
-        this->data_[row].push_back(T(std::stof(string_value)));
-      } catch (...) {
-        this->data_[row].push_back(std::numeric_limits<T>::quiet_NaN());
-      }
-      this->width_++;
-
-      row++;
-      this->height_++;
-    }
-    this->width_ = (this->width_ / this->height_);
-  }
-
-  /**
-   * @brief Fill an empty vector with values (in any order) of a dataframe for
-   * the purpose of calculating its Median
-   * @param empty_vector: Empty vector to fill with dataframe values
-   */
-  void Flatten(std::vector<T> &empty_vector) const {
-    std::for_each(
-        std::execution::par_unseq, this->data_.begin(), this->data_.end(),
-        [this, &empty_vector](const std::vector<T> &x) {
-          std::for_each(x.begin(), x.end(), [this, &x, &empty_vector](T y) {
-            if (!std::isnan(y)) {
-              std::lock_guard lock{data_mtx_};
-              empty_vector.push_back(y);
-            }
-          });
-        });
-  }
-
-  /**
-   * @brief get median of any vector (Must have NaN pre-handled)
-   * @param vec vector with desired median
-   * @return median of vector vec
-   */
-  T MedianHelper(std::vector<T> &vec) const {
-    std::size_t n = vec.size() / 2;
-    std::nth_element(vec.begin(), vec.begin() + n, vec.end());
-
-    if (vec.size() % 2 == 0) {
-      T left_middle = *std::max_element(vec.begin(), vec.begin() + n);
-      return (left_middle + vec[n]) / T(2.0);
-    }
-    if (vec.size() % 2 != 0) {
-      return vec[n];
-    } else {
-    }
-  }
-
 public:
+  static std::optional<Dataframe<T>> New(const std::string &file_name,
+                                         bool file_has_header) {
+    std::ifstream file(file_name);
+    if (!file) {
+      std::cerr << "ERROR: INVALID FILE PATH" << std::endl;
+      return std::nullopt;
+    }
+    return Dataframe<T>{file_name, file_has_header};
+  }
+
   /**
    * @brief Creates a dataframe with a file path and csv headers.
    * @param file_name: filepath to csv file you want to load
@@ -1152,6 +1058,130 @@ public:
 
   std::vector<T> operator[](std::size_t index) {
     return this->data_[index]; // get
+  }
+
+private:
+  /**
+   * @brief Creates a dataframe with a file path and csv headers.
+   * @param file_name: filepath to csv file you want to load
+   * @param file_has_header: whether or not your file has headers in the first
+   * row of the csv
+   */
+  Dataframe(const std::ifstream &file, bool file_has_header)
+      : height_{0}, width_{0}, max_column_width_{0},
+        has_header_row_{file_has_header}, data_mtx_{} {
+
+    ReadHeaders(this->has_header_row_, file);
+
+    if (this->max_column_width_ <= 0) {
+      this->max_column_width_ = 15;
+    }
+
+    ReadVals(file);
+  }
+
+  /**
+   * @brief Read the headers from a csv file
+   * @param file_has_header: Whether or not a csv file has header row of strings
+   * @param file: (non-const) reference to a file stream to read headers
+   */
+  void ReadHeaders(bool file_has_header, std::ifstream &file) {
+    if (file_has_header) {
+      std::string header_row;
+      std::getline(file, header_row);
+      std::size_t pos{};
+
+      // parse commas in single row
+      while ((pos = header_row.find(",")) != std::string::npos) {
+        this->headers_.push_back(header_row.substr(0, header_row.find(",")));
+
+        if (header_row.substr(0, header_row.find(",")).length() >
+            this->max_column_width_) {
+          this->max_column_width_ =
+              header_row.substr(0, header_row.find(",")).length() + padding;
+        }
+
+        header_row.erase(0, pos + 1);
+      }
+      this->headers_.push_back(
+          header_row); // push last val since it will no longer have a comma
+    }
+  }
+
+  /**
+   * @brief Read data from csv and put it into the dataframe
+   * @param file: (non-const) reference to the file to read from
+   */
+  void ReadVals(std::ifstream &file) {
+    std::string string_value{};
+    std::string sub_string_value{};
+
+    std::size_t row = 0;
+    std::size_t pos = 0;
+    while (std::getline(file, string_value)) { // Rows
+      this->data_.push_back(std::vector<T>{});
+
+      while ((pos = string_value.find(",")) != std::string::npos) { // Cols
+        this->width_++;
+
+        try {
+          this->data_[row].push_back(
+              T(std::stof(string_value.substr(0, string_value.find(",")))));
+        } catch (...) {
+          this->data_[row].push_back(std::numeric_limits<T>::quiet_NaN());
+        }
+        string_value.erase(0, pos + 1);
+      }
+
+      // store last col val where no more comma is found
+      try {
+        this->data_[row].push_back(T(std::stof(string_value)));
+      } catch (...) {
+        this->data_[row].push_back(std::numeric_limits<T>::quiet_NaN());
+      }
+      this->width_++;
+
+      row++;
+      this->height_++;
+    }
+    this->width_ = (this->width_ / this->height_);
+  }
+
+  /**
+   * @brief Fill an empty vector with values (in any order) of a dataframe for
+   * the purpose of calculating its Median
+   * @param empty_vector: Empty vector to fill with dataframe values
+   */
+  void Flatten(std::vector<T> &empty_vector) const {
+    std::for_each(
+        std::execution::par_unseq, this->data_.begin(), this->data_.end(),
+        [this, &empty_vector](const std::vector<T> &x) {
+          std::for_each(x.begin(), x.end(), [this, &x, &empty_vector](T y) {
+            if (!std::isnan(y)) {
+              std::lock_guard lock{data_mtx_};
+              empty_vector.push_back(y);
+            }
+          });
+        });
+  }
+
+  /**
+   * @brief get median of any vector (Must have NaN pre-handled)
+   * @param vec vector with desired median
+   * @return median of vector vec
+   */
+  T MedianHelper(std::vector<T> &vec) const {
+    std::size_t n = vec.size() / 2;
+    std::nth_element(vec.begin(), vec.begin() + n, vec.end());
+
+    if (vec.size() % 2 == 0) {
+      T left_middle = *std::max_element(vec.begin(), vec.begin() + n);
+      return (left_middle + vec[n]) / T(2.0);
+    }
+    if (vec.size() % 2 != 0) {
+      return vec[n];
+    } else {
+    }
   }
 
 private:
