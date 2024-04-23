@@ -15,25 +15,25 @@
 #include <type_traits>
 #include <vector>
 
-#include "Exceptions.h"
+#include "Exceptions.hpp"
 
 namespace read_file {
 
 constexpr uint64_t padding = 5;
 namespace detail {
-static std::mutex data_mtx;  // needs to be static for one definition rule when
-                             // used in other projects
+static std::mutex data_mtx; // needs to be static for one definition rule when
+                            // used in other projects
 
 template <class T>
-inline void CalculateFrequencyDomain(const std::vector<T>& signal,
-                                     std::vector<T>& array_to_fill,
+inline void CalculateFrequencyDomain(const std::vector<T> &signal,
+                                     std::vector<T> &array_to_fill,
                                      size_t sample_rate) {
   std::iota(array_to_fill.begin(), array_to_fill.end(), T(0));
 
   T scaler = static_cast<T>(sample_rate) / signal.size();
   std::transform(std::execution::par, array_to_fill.begin(),
                  array_to_fill.end(), array_to_fill.begin(),
-                 [&scaler](T& x) { return x * scaler; });
+                 [&scaler](T &x) { return x * scaler; });
 }
 
 /**
@@ -44,9 +44,9 @@ inline void CalculateFrequencyDomain(const std::vector<T>& signal,
  *
  */
 template <class T>
-inline void CalculateDiscreteFT(const std::vector<T>& signal,
-                                std::vector<std::complex<T>>& domain_to_fill) {
-  std::vector<std::vector<std::complex<T>>> k(signal.size());  // Column vec
+inline void CalculateDiscreteFT(const std::vector<T> &signal,
+                                std::vector<std::complex<T>> &domain_to_fill) {
+  std::vector<std::vector<std::complex<T>>> k(signal.size()); // Column vec
 
   // init k w/ 0,0
   constexpr std::complex<T> zero_z(T(0.0), T(0.0));
@@ -64,23 +64,23 @@ inline void CalculateDiscreteFT(const std::vector<T>& signal,
   constexpr std::complex<T> comp(T(0.0), T(-2.0));
   const T N = T(k.size());
   std::for_each(
-      std::execution::par_unseq, k.begin(), k.end(), [&comp, &N](auto& x) {
+      std::execution::par_unseq, k.begin(), k.end(), [&comp, &N](auto &x) {
         std::transform(std::execution::par, x.begin(), x.end(), x.begin(),
-                       [&comp, &N](std::complex<T>& y) {
+                       [&comp, &N](std::complex<T> &y) {
                          return std::pow(T(2.71828),
                                          comp * T(3.141592654) * y / N);
                        });
       });
 
   // e dot signal
-  std::transform(
-      std::execution::par_unseq, k.begin(), k.end(), domain_to_fill.begin(),
-      [&signal, &N](auto& x) {
-        const std::complex<T> dot =
-            std::inner_product(x.begin(), x.end(), signal.begin(),
-                               std::complex<T>(T(0.0), T(0.0)));
-        return dot / (std::complex<T>(N) / std::complex<T>(T(2.0), T(0.0)));
-      });
+  std::transform(std::execution::par_unseq, k.begin(), k.end(),
+                 domain_to_fill.begin(), [&signal, &N](auto &x) {
+                   const std::complex<T> dot =
+                       std::inner_product(x.begin(), x.end(), signal.begin(),
+                                          std::complex<T>(T(0.0), T(0.0)));
+                   return dot / (std::complex<T>(N) /
+                                 std::complex<T>(T(2.0), T(0.0)));
+                 });
 }
 
 /**
@@ -94,8 +94,8 @@ inline void CalculateDiscreteFT(const std::vector<T>& signal,
  *
  */
 template <class T>
-inline void ExtractNFrequencies(const std::vector<T>& signal,
-                                std::vector<T>& dest, const size_t sample_rate,
+inline void ExtractNFrequencies(const std::vector<T> &signal,
+                                std::vector<T> &dest, const size_t sample_rate,
                                 const size_t n) {
   if (dest.size()) {
     std::cout << "Error: Non-empty destination vector received" << std::endl;
@@ -111,7 +111,7 @@ inline void ExtractNFrequencies(const std::vector<T>& signal,
   std::vector<T> real(signal.size() / 2);
   std::transform(std::execution::par_unseq, dft_domain.begin(),
                  dft_domain.begin() + real.size(), real.begin(),
-                 [](std::complex<T>& x) { return std::abs(x); });
+                 [](std::complex<T> &x) { return std::abs(x); });
 
   auto it = std::max_element(real.begin(), real.end());
   for (size_t i = 0; i < n; i++) {
@@ -133,8 +133,8 @@ inline void ExtractNFrequencies(const std::vector<T>& signal,
  *
  */
 template <class T>
-inline void ExtractNAmplitudes(const std::vector<T>& signal,
-                               std::vector<T>& dest, const size_t n) {
+inline void ExtractNAmplitudes(const std::vector<T> &signal,
+                               std::vector<T> &dest, const size_t n) {
   if (dest.size()) {
     std::cout << "Error: Non-empty destination vector received" << std::endl;
     return;
@@ -146,7 +146,7 @@ inline void ExtractNAmplitudes(const std::vector<T>& signal,
   std::vector<T> real(signal.size() / 2);
   std::transform(std::execution::par_unseq, dft_domain.begin(),
                  dft_domain.begin() + real.size(), real.begin(),
-                 [](std::complex<T>& x) { return std::abs(x); });
+                 [](std::complex<T> &x) { return std::abs(x); });
 
   auto it = std::max_element(real.begin(), real.end());
   for (size_t i = 0; i < n; i++) {
@@ -167,7 +167,7 @@ inline void ExtractNAmplitudes(const std::vector<T>& signal,
  *
  */
 template <class T>
-inline void ExtractNPhases(const std::vector<T>& signal, std::vector<T>& dest,
+inline void ExtractNPhases(const std::vector<T> &signal, std::vector<T> &dest,
                            const size_t n) {
   if (dest.size()) {
     std::cout << "Error: Non-empty destination vector received" << std::endl;
@@ -180,7 +180,7 @@ inline void ExtractNPhases(const std::vector<T>& signal, std::vector<T>& dest,
   std::vector<T> real(signal.size() / 2);
   std::transform(std::execution::par_unseq, dft_domain.begin(),
                  dft_domain.begin() + real.size(), real.begin(),
-                 [](std::complex<T>& x) { return std::abs(x); });
+                 [](std::complex<T> &x) { return std::abs(x); });
 
   std::complex<T> max_el{};
   auto it = std::max_element(real.begin(), real.end());
@@ -194,17 +194,16 @@ inline void ExtractNPhases(const std::vector<T>& signal, std::vector<T>& dest,
     it = std::max_element(real.begin(), real.end());
   }
 }
-}  // namespace detail
+} // namespace detail
 
-template <class T>
-class Dataframe {
- private:
+template <class T> class Dataframe {
+private:
   /**
    * @brief Read the headers from a csv file
    * @param file_has_header: Whether or not a csv file has header row of strings
    * @param file: (non-const) reference to a file stream to read headers
    */
-  void ReadHeaders(bool file_has_header, std::ifstream& file) {
+  void ReadHeaders(bool file_has_header, std::ifstream &file) {
     if (file_has_header) {
       std::string header_row;
       std::getline(file, header_row);
@@ -223,7 +222,7 @@ class Dataframe {
         header_row.erase(0, pos + 1);
       }
       this->headers_.push_back(
-          header_row);  // push last val since it will no longer have a comma
+          header_row); // push last val since it will no longer have a comma
     }
   }
 
@@ -231,16 +230,16 @@ class Dataframe {
    * @brief Read data from csv and put it into the dataframe
    * @param file: (non-const) reference to the file to read from
    */
-  void ReadVals(std::ifstream& file) {
+  void ReadVals(std::ifstream &file) {
     std::string string_value{};
     std::string sub_string_value{};
 
     size_t row = 0;
     size_t pos = 0;
-    while (std::getline(file, string_value)) {  // Rows
+    while (std::getline(file, string_value)) { // Rows
       this->data_.push_back(std::vector<T>{});
 
-      while ((pos = string_value.find(",")) != std::string::npos) {  // Cols
+      while ((pos = string_value.find(",")) != std::string::npos) { // Cols
         this->width_++;
 
         try {
@@ -271,9 +270,9 @@ class Dataframe {
    * the purpose of calculating its Median
    * @param empty_vector: Empty vector to fill with dataframe values
    */
-  void Flatten(std::vector<T>& empty_vector) const {
+  void Flatten(std::vector<T> &empty_vector) const {
     std::for_each(std::execution::par_unseq, this->data_.begin(),
-                  this->data_.end(), [&empty_vector](const std::vector<T>& x) {
+                  this->data_.end(), [&empty_vector](const std::vector<T> &x) {
                     std::for_each(x.begin(), x.end(), [&x, &empty_vector](T y) {
                       if (!std::isnan(y)) {
                         detail::data_mtx.lock();
@@ -289,7 +288,7 @@ class Dataframe {
    * @param vec vector with desired median
    * @return median of vector vec
    */
-  T MedianHelper(std::vector<T>& vec) const {
+  T MedianHelper(std::vector<T> &vec) const {
     size_t n = vec.size() / 2;
     std::nth_element(vec.begin(), vec.begin() + n, vec.end());
 
@@ -303,17 +302,15 @@ class Dataframe {
     }
   }
 
- public:
+public:
   /**
    * @brief Creates a dataframe with a file path and csv headers.
    * @param file_name: filepath to csv file you want to load
    * @param file_has_header: whether or not your file has headers in the first
    * row of the csv
    */
-  Dataframe(const std::string& file_name, bool file_has_header)
-      : height_{0},
-        width_{0},
-        max_column_width_{0},
+  Dataframe(const std::string &file_name, bool file_has_header)
+      : height_{0}, width_{0}, max_column_width_{0},
         has_header_row_{file_has_header} {
     std::ifstream file(file_name);
     if (!file) {
@@ -334,7 +331,7 @@ class Dataframe {
    * @brief Create a basic Dataframe assuming file has headers
    * @param file_name: Name of csv file to read
    */
-  Dataframe(const std::string& file_name)
+  Dataframe(const std::string &file_name)
       : height_{0}, width_{0}, max_column_width_{0}, has_header_row_{true} {
     std::ifstream file(file_name);
     if (!file) {
@@ -355,14 +352,11 @@ class Dataframe {
    * @brief Create a dataframe from local vectors without headers
    * @param local_data Array to create Dataframe from
    */
-  Dataframe(const std::vector<std::vector<T>>& local_data)
-      : height_{local_data.size()},
-        width_{local_data[0].size()},
-        data_{local_data},
-        headers_{std::vector<std::string>{}},
-        max_column_width_{15},
-        has_header_row_{false} {
-    for (const std::vector<T>& row : local_data) {
+  Dataframe(const std::vector<std::vector<T>> &local_data)
+      : height_{local_data.size()}, width_{local_data[0].size()},
+        data_{local_data}, headers_{std::vector<std::string>{}},
+        max_column_width_{15}, has_header_row_{false} {
+    for (const std::vector<T> &row : local_data) {
       if (row.size() != this->width_) {
         throw BadDataframeShapeException();
       }
@@ -373,15 +367,12 @@ class Dataframe {
    * @brief Create a dataframe from local vectors with headers
    * @param local_data Array to create Dataframe from
    */
-  Dataframe(const std::vector<std::vector<T>>& local_data,
-            const std::vector<std::string>& headers)
-      : height_{local_data.size()},
-        width_{local_data[0].size()},
-        data_{local_data},
-        headers_{headers},
-        max_column_width_{15},
+  Dataframe(const std::vector<std::vector<T>> &local_data,
+            const std::vector<std::string> &headers)
+      : height_{local_data.size()}, width_{local_data[0].size()},
+        data_{local_data}, headers_{headers}, max_column_width_{15},
         has_header_row_{true} {
-    for (const std::vector<T>& row : local_data) {
+    for (const std::vector<T> &row : local_data) {
       if (row.size() != this->width_) {
         throw BadDataframeShapeException();
       }
@@ -391,7 +382,7 @@ class Dataframe {
       throw HeaderDataSizeMismatchException();
     }
 
-    for (const std::string& label : headers) {
+    for (const std::string &label : headers) {
       if (label.length() > 15) {
         this->max_column_width_ = label.length();
       }
@@ -402,11 +393,8 @@ class Dataframe {
    * @brief CTOR to make an empty dataframe
    */
   Dataframe()
-      : height_{0},
-        width_{0},
-        data_{std::vector<std::vector<T>>{}},
-        headers_{std::vector<std::string>{}},
-        max_column_width_{15},
+      : height_{0}, width_{0}, data_{std::vector<std::vector<T>>{}},
+        headers_{std::vector<std::string>{}}, max_column_width_{15},
         has_header_row_{false} {}
 
   /**
@@ -415,12 +403,10 @@ class Dataframe {
    * @param columns Number of desired Columns in Dataframe
    */
   Dataframe(size_t rows, size_t columns)
-      : height_{rows},
-        width_{columns},
+      : height_{rows}, width_{columns},
         data_{
             std::vector<std::vector<T>>(rows, std::vector<T>(columns, T(0.0)))},
-        headers_{std::vector<std::string>{}},
-        max_column_width_{15},
+        headers_{std::vector<std::string>{}}, max_column_width_{15},
         has_header_row_{false} {}
 
   /**
@@ -430,19 +416,16 @@ class Dataframe {
    * @param headers Vector of headers of the Dataframe
    */
   Dataframe(size_t rows, size_t columns,
-            const std::vector<std::string>& headers)
-      : height_{rows},
-        width_{columns},
+            const std::vector<std::string> &headers)
+      : height_{rows}, width_{columns},
         data_{
             std::vector<std::vector<T>>(rows, std::vector<T>(columns, T(0.0)))},
-        headers_{headers},
-        max_column_width_{15},
-        has_header_row_{true} {
+        headers_{headers}, max_column_width_{15}, has_header_row_{true} {
     if (headers.size() != this->width_) {
       throw HeaderDataSizeMismatchException();
     }
 
-    for (const std::string& label : headers) {
+    for (const std::string &label : headers) {
       if (label.length() > this->max_column_width_) {
         this->max_column_width_ = label.length();
       }
@@ -453,7 +436,7 @@ class Dataframe {
    * @brief
    * @param new_header_row
    */
-  void RefactorHeaders(const std::vector<std::string>& new_header_row) {
+  void RefactorHeaders(const std::vector<std::string> &new_header_row) {
     if (this->has_header_row_) {
       // check size mismatch
       if (new_header_row.size() != this->headers_.size()) {
@@ -471,7 +454,7 @@ class Dataframe {
     }
 
     // update column width for printing
-    for (const std::string& label : new_header_row) {
+    for (const std::string &label : new_header_row) {
       if (label.length() > this->max_column_width_) {
         this->max_column_width_ = label.length();
       }
@@ -483,7 +466,7 @@ class Dataframe {
    * @param index Numeric index of the column to refactor
    * @param new_column The new column replacing the old column
    */
-  void RefactorColumn(size_t index, const std::vector<T>& new_column) {
+  void RefactorColumn(size_t index, const std::vector<T> &new_column) {
     if (new_column.size() != this->height_) {
       throw DataframeVectorSizeMismatchException();
     }
@@ -508,8 +491,8 @@ class Dataframe {
    * @param index String index of the column to refactor
    * @param new_column The new column replacing the old column
    */
-  void RefactorColumn(const std::string& index,
-                      const std::vector<T>& new_column) {
+  void RefactorColumn(const std::string &index,
+                      const std::vector<T> &new_column) {
     // TODO: String indexed refactor
   }
 
@@ -555,7 +538,7 @@ class Dataframe {
 
       std::cout << std::endl;
 
-      for (const std::string& str : this->headers_) {
+      for (const std::string &str : this->headers_) {
         std::cout << std::setw(this->max_column_width_) << str << "|";
       }
 
@@ -603,7 +586,7 @@ class Dataframe {
 
       std::cout << std::endl;
 
-      for (const std::string& str : this->headers_) {
+      for (const std::string &str : this->headers_) {
         std::cout << std::setw(this->max_column_width_) << str << "|";
       }
 
@@ -633,10 +616,10 @@ class Dataframe {
    * this->has_header_row is true
    * @return The column's mean on success, returns NaN on failure
    */
-  T Mean(const std::string& col_name) const {
+  T Mean(const std::string &col_name) const {
     if (!this->has_header_row_) {
       std::cout << "WARNING: This frame has no headers."
-                << std::endl;  // throw here
+                << std::endl; // throw here
       throw ColumnNotFoundException();
     }
 
@@ -658,7 +641,7 @@ class Dataframe {
 
     std::transform(
         std::execution::par_unseq, col.begin(), col.end(), col.begin(),
-        [this, &col_index](T& x) {
+        [this, &col_index](T &x) {
           T val{};
           // catch NaN
           if (!std::isnan((this->data_)[static_cast<size_t>(x)][col_index])) {
@@ -681,13 +664,13 @@ class Dataframe {
    * if false
    * @return The column's mean on success, returns NaN on failure
    */
-  T Mean(const std::string& col_name, bool omit_nan) const {
+  T Mean(const std::string &col_name, bool omit_nan) const {
     if (!omit_nan) {
       return Mean(col_name);
     } else {
       if (!this->has_header_row_) {
         std::cout << "WARNING: This frame has no headers. NaN returned..."
-                  << std::endl;  // Throw here
+                  << std::endl; // Throw here
         throw ColumnNotFoundException();
       }
 
@@ -706,16 +689,16 @@ class Dataframe {
       std::vector<T> col(this->height_);
 
       std::iota(col.begin(), col.end(),
-                T(0.0));  // Fix me, complex nums can't ++
+                T(0.0)); // Fix me, complex nums can't ++
 
       std::transform(
           std::execution::par_unseq, col.begin(), col.end(), col.begin(),
-          [this, &col_index](T& x) {
+          [this, &col_index](T &x) {
             T val{};
             // catch NaN
             if (!std::isnan((this->data_)[static_cast<size_t>(x)][col_index])) {
               val =
-                  (this->data_)[static_cast<size_t>(x)][col_index];  // eval abs
+                  (this->data_)[static_cast<size_t>(x)][col_index]; // eval abs
             } else {
               return std::numeric_limits<T>::quiet_NaN();
             }
@@ -746,7 +729,7 @@ class Dataframe {
     // Row wise mean
     if (static_cast<uint64_t>(std::abs(index)) >= this->height_) {
       std::cout << "Index out of bounds. NaN returned..."
-                << std::endl;  // throw here
+                << std::endl; // throw here
       throw DataframeIndexOutOfBoundsException();
     }
 
@@ -759,7 +742,7 @@ class Dataframe {
     // std::vector<T> row = this->data_[index];
     std::vector<T> row(this->width_);
     std::transform(this->data_[index].begin(), this->data_[index].end(),
-                   row.begin(), [](const T& x) {
+                   row.begin(), [](const T &x) {
                      if (std::isnan(x)) {
                        return T(0.0);
                      } else {
@@ -783,7 +766,7 @@ class Dataframe {
     } else {
       if (static_cast<uint64_t>(std::abs(index)) >= this->height_) {
         std::cout << "Index out of bounds. NaN returned..."
-                  << std::endl;  // throw here
+                  << std::endl; // throw here
         throw DataframeIndexOutOfBoundsException();
       }
 
@@ -793,7 +776,7 @@ class Dataframe {
       }
 
       auto row{std::ranges::views::filter(
-          this->data_[index], [](const T& x) { return !std::isnan(x); })};
+          this->data_[index], [](const T &x) { return !std::isnan(x); })};
 
       uint64_t nans =
           std::count_if(this->data_[index].begin(), this->data_[index].end(),
@@ -819,7 +802,7 @@ class Dataframe {
     if (col_wise && !omit_nan) {
       if (static_cast<uint64_t>(std::abs(index)) >= this->width_) {
         std::cout << "Index out of bounds. NaN returned..."
-                  << std::endl;  // throw here
+                  << std::endl; // throw here
         throw DataframeIndexOutOfBoundsException();
       }
 
@@ -832,15 +815,15 @@ class Dataframe {
       std::vector<T> col(this->height_);
 
       std::iota(col.begin(), col.end(),
-                T(0.0));  // Fix me, complex nums can't ++
+                T(0.0)); // Fix me, complex nums can't ++
 
       std::transform(
           std::execution::par_unseq, col.begin(), col.end(), col.begin(),
-          [this, &index](T& x) {
+          [this, &index](T &x) {
             T val{};
             // catch NaN
             if (!std::isnan((this->data_)[static_cast<size_t>(x)][index])) {
-              val = (this->data_)[static_cast<size_t>(x)][index];  // eval abs
+              val = (this->data_)[static_cast<size_t>(x)][index]; // eval abs
             } else {
               val = T(0.0);
             }
@@ -851,7 +834,7 @@ class Dataframe {
     } else if (col_wise && omit_nan) {
       if (static_cast<uint64_t>(std::abs(index)) >= this->width_) {
         std::cout << "Index out of bounds. NaN returned..."
-                  << std::endl;  // throw here
+                  << std::endl; // throw here
         throw DataframeIndexOutOfBoundsException();
       }
 
@@ -864,15 +847,15 @@ class Dataframe {
       std::vector<T> col(this->height_);
 
       std::iota(col.begin(), col.end(),
-                T(0.0));  // Fix me, complex nums can't ++
+                T(0.0)); // Fix me, complex nums can't ++
 
       std::transform(
           std::execution::par_unseq, col.begin(), col.end(), col.begin(),
-          [this, &index](T& x) {
+          [this, &index](T &x) {
             T val{};
             // catch NaN
             if (!std::isnan((this->data_)[static_cast<size_t>(x)][index])) {
-              val = (this->data_)[static_cast<size_t>(x)][index];  // eval abs
+              val = (this->data_)[static_cast<size_t>(x)][index]; // eval abs
             } else {
               return std::numeric_limits<T>::quiet_NaN();
             }
@@ -906,9 +889,9 @@ class Dataframe {
     T divisor{};
 
     // cannot be threaded, has data race
-    std::for_each((this->data_).begin(),  // each row
+    std::for_each((this->data_).begin(), // each row
                   (this->data_).end(),
-                  [&sum, &divisor](const std::vector<T>& x) {
+                  [&sum, &divisor](const std::vector<T> &x) {
                     std::for_each(x.begin(), x.end(), [&sum, &divisor](T y) {
                       if (!std::isnan(y)) {
                         sum += y;
@@ -928,7 +911,7 @@ class Dataframe {
   T Median(int64_t index) const {
     if (static_cast<uint64_t>(std::abs(index)) > this->height_) {
       std::cout << "Index out of bounds. NaN returned..."
-                << std::endl;  // throw here
+                << std::endl; // throw here
       throw DataframeIndexOutOfBoundsException();
     }
 
@@ -956,7 +939,7 @@ class Dataframe {
    * @param col Name of the column with desired median
    * @return Median of named column
    */
-  T Median(const std::string& col_name) const {
+  T Median(const std::string &col_name) const {
     // Find col index
     auto col_index =
         std::find(std::execution::par_unseq, (this->headers_).begin(),
@@ -964,13 +947,13 @@ class Dataframe {
         (this->headers_).begin();
 
     if (col_index + (this->headers_).begin() == (this->headers_).end()) {
-      std::cerr << "ERROR: Column not found" << std::endl;  // throw here
+      std::cerr << "ERROR: Column not found" << std::endl; // throw here
       throw ColumnNotFoundException();
     }
 
     std::vector<T> col{};
     std::for_each(this->data_.begin(), this->data_.end(),
-                  [&col, col_index](const std::vector<T>& x) {
+                  [&col, col_index](const std::vector<T> &x) {
                     if (!std::isnan(x[col_index])) {
                       col.push_back(x[col_index]);
                     }
@@ -991,7 +974,7 @@ class Dataframe {
     } else {
       if (static_cast<uint64_t>(std::abs(index)) > this->width_) {
         std::cout << "Index out of bounds. NaN returned..."
-                  << std::endl;  // throw here
+                  << std::endl; // throw here
         throw DataframeIndexOutOfBoundsException();
       }
 
@@ -1002,7 +985,7 @@ class Dataframe {
 
       std::vector<T> col{};
       std::for_each(this->data_.begin(), this->data_.end(),
-                    [&col, index](const std::vector<T>& x) {
+                    [&col, index](const std::vector<T> &x) {
                       if (!std::isnan(x[index])) {
                         col.push_back(x[index]);
                       }
@@ -1026,7 +1009,7 @@ class Dataframe {
    * @brief Insert row from vector at end of dataframe
    * @param row Row to append to end of dataframe
    */
-  void InsertRow(const std::vector<T>& row) {
+  void InsertRow(const std::vector<T> &row) {
     if (row.size() != this->width_) {
       throw DataframeVectorSizeMismatchException();
     }
@@ -1050,7 +1033,7 @@ class Dataframe {
    * @param header String for the header of this new column
    * @param col the vector to be inserted into the datafarme
    */
-  void InsertColumn(const std::string& header, const std::vector<T>& col) {
+  void InsertColumn(const std::string &header, const std::vector<T> &col) {
     if (col.size() != this->height_) {
       throw DataframeVectorSizeMismatchException();
     }
@@ -1072,7 +1055,7 @@ class Dataframe {
    * @brief Insert a new unnamed column into the dataframe
    * @param col The vector to insert into the dataframe
    */
-  void InsertColumn(const std::vector<T>& col) {
+  void InsertColumn(const std::vector<T> &col) {
     if (col.size() != this->height_) {
       throw DataframeVectorSizeMismatchException();
     }
@@ -1091,7 +1074,7 @@ class Dataframe {
   /**
    * @brief Insert new empty named column into dataframe
    */
-  void InsertColumn(const std::string& header) {
+  void InsertColumn(const std::string &header) {
     if (!this->has_header_row_) {
       throw HeaderStateMismatchException();
     }
@@ -1100,7 +1083,7 @@ class Dataframe {
 
     std::for_each(std::execution::par_unseq, this->data_.begin(),
                   this->data_.end(),
-                  [](std::vector<T>& x) { x.push_back(T(0.0)); });
+                  [](std::vector<T> &x) { x.push_back(T(0.0)); });
     this->width_++;
   }
 
@@ -1113,7 +1096,7 @@ class Dataframe {
     }
 
     std::for_each(this->data_.begin(), this->data_.end(),
-                  [](std::vector<T>& x) { x.push_back(T(0.0)); });
+                  [](std::vector<T> &x) { x.push_back(T(0.0)); });
     this->width_++;
   }
 
@@ -1137,7 +1120,7 @@ class Dataframe {
    * @param label Header of column to get
    * @return reference to a vector representing the column
    */
-  std::vector<T> GetColumn(const std::string& label) const {
+  std::vector<T> GetColumn(const std::string &label) const {
     // TODO
   }
 
@@ -1146,7 +1129,7 @@ class Dataframe {
    * @param index index of desired header
    * @return Referance to a string that holds the label
    */
-  const std::string& GetHeader(size_t index) const {
+  const std::string &GetHeader(size_t index) const {
     if (index >= this->width_) {
       throw DataframeIndexOutOfBoundsException();
     }
@@ -1168,7 +1151,7 @@ class Dataframe {
    * @param new_col New desired column
    * @param index position of old column to change
    */
-  void SetColumn(const std::vector<T>& new_col, size_t index) {
+  void SetColumn(const std::vector<T> &new_col, size_t index) {
     if (new_col.size() != this->height_) {
       throw DataframeVectorSizeMismatchException();
     }
@@ -1178,7 +1161,7 @@ class Dataframe {
     }
   }
 
-  void SetColumn(const std::vector<T>& new_col, const std::string& col_name) {
+  void SetColumn(const std::vector<T> &new_col, const std::string &col_name) {
     // TODO
   }
 
@@ -1200,18 +1183,18 @@ class Dataframe {
         std::string dsp_attrubute{};
 
         switch (attribute) {
-          case 0:
-            dsp_attrubute = " Frequencies";
-            tmp.append(dsp_attrubute);
-            break;
-          case 1:
-            dsp_attrubute = " Amplitudes";
-            tmp.append(dsp_attrubute);
-            break;
-          case 2:
-            dsp_attrubute = " Phases";
-            tmp.append(dsp_attrubute);
-            break;
+        case 0:
+          dsp_attrubute = " Frequencies";
+          tmp.append(dsp_attrubute);
+          break;
+        case 1:
+          dsp_attrubute = " Amplitudes";
+          tmp.append(dsp_attrubute);
+          break;
+        case 2:
+          dsp_attrubute = " Phases";
+          tmp.append(dsp_attrubute);
+          break;
         }
 
         headers.push_back(tmp);
@@ -1248,12 +1231,12 @@ class Dataframe {
    * @brief Write an existing dataframe to a CSV file
    * @param file_path File path to write the new file to. Must end in CSV
    */
-  void ToCsv(const std::string& file_path) const {
+  void ToCsv(const std::string &file_path) const {
     std::ofstream file;
     file.open(file_path);
 
     if (this->has_header_row_) {
-      for (const std::string& header : this->headers_) {
+      for (const std::string &header : this->headers_) {
         file << header;
         file << ",";
       }
@@ -1261,7 +1244,7 @@ class Dataframe {
 
     file << "\n";
 
-    for (const std::vector<T>& row : this->data_) {
+    for (const std::vector<T> &row : this->data_) {
       for (const T element : row) {
         file << element;
         file << ",";
@@ -1270,7 +1253,7 @@ class Dataframe {
     }
   }
 
-  void ToTxt(const std::string& file_path) {
+  void ToTxt(const std::string &file_path) {
     std::ofstream file;
     file.open(file_path);
 
@@ -1280,7 +1263,7 @@ class Dataframe {
         file << "_";
       }
       file << std::endl;
-      for (const std::string& str : this->headers_) {
+      for (const std::string &str : this->headers_) {
         file << std::setw(this->max_column_width_) << str << "|";
       }
       file << std::endl;
@@ -1307,7 +1290,7 @@ class Dataframe {
    * @brief Stack this's dataframe onto a given dataframe to concatenate the two
    * @param bottom Bottom frame to stack this on top of
    */
-  void Stack(Dataframe<T>& bottom) {
+  void Stack(Dataframe<T> &bottom) {
     if (this->width_ != bottom.width_) {
       throw DataframeVectorSizeMismatchException();
     }
@@ -1316,7 +1299,7 @@ class Dataframe {
       throw HeaderLabelMismatchException();
     }
 
-    for (std::vector<T>& row : bottom.data_) {
+    for (std::vector<T> &row : bottom.data_) {
       this->data_.push_back(row);
     }
 
@@ -1324,24 +1307,24 @@ class Dataframe {
   }
 
   template <class V>
-  friend inline std::ostream& operator<<(std::ostream& os,
-                                         const Dataframe<V>& df);
+  friend inline std::ostream &operator<<(std::ostream &os,
+                                         const Dataframe<V> &df);
 
   std::vector<T> operator[](size_t index) {
-    return this->data_[index];  // get
+    return this->data_[index]; // get
   }
 
- private:
+private:
   size_t height_;
   size_t width_;
   bool has_header_row_;
   std::vector<std::vector<T>> data_;
   std::vector<std::string> headers_;
   size_t max_column_width_;
-};  // class Dataframe
+}; // class Dataframe
 
 template <class V>
-inline std::ostream& operator<<(std::ostream& os, const Dataframe<V>& df) {
+inline std::ostream &operator<<(std::ostream &os, const Dataframe<V> &df) {
   uint64_t n_rows{};
 
   if (df.Height() >= 20) {
@@ -1357,7 +1340,7 @@ inline std::ostream& operator<<(std::ostream& os, const Dataframe<V>& df) {
       os << "_";
     }
     os << std::endl;
-    for (const std::string& str : df.headers_) {
+    for (const std::string &str : df.headers_) {
       os << std::setw(df.max_column_width_) << str << "|";
     }
     os << std::endl;
@@ -1393,6 +1376,6 @@ inline std::ostream& operator<<(std::ostream& os, const Dataframe<V>& df) {
   return os;
 }
 
-}  // namespace read_file
+} // namespace read_file
 
-#endif  // CSVLIBRARY_READCSV_H
+#endif // CSVLIBRARY_READCSV_H

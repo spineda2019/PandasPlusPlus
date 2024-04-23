@@ -7,9 +7,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(PPP_SOURCES
     "CCSVInterface.cpp"
-    "CCSVInterface.h"
-    "Dataframe.h"
-    "Exceptions.h"
+    "CCSVInterface.hpp"
+    "Dataframe.hpp"
+    "Exceptions.hpp"
     )
 
 add_library(libppp ${MODULE_BUILD_TYPE} ${PPP_SOURCES})
