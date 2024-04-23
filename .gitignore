@@ -5,3 +5,5 @@ CSVLibrary.vcxproj.filters
 CSVLibrary.vcxproj.user
 framework.h
 x64/
+build
+debug-build
