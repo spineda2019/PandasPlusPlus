@@ -2,6 +2,8 @@
 #include <iostream>
 #include <ostream>
 #include <ppp/Matrix.hpp>
+#include <span>
+#include <string_view>
 #include <vector>
 
 void TestHeadlessPrint() {
@@ -34,8 +36,26 @@ void TestComplexPrint() {
     std::cout << cmp << std::endl;
 }
 
+bool TestInsertingHeaders() {
+    std::vector<std::vector<float>> data{
+        {3.0, 4.0},
+        {3.0, 4.0},
+    };
+
+    ppp::Matrix lvalue{data};
+    std::vector<std::string_view> headers{"Foo", "Bar"};
+    if (const std::optional<std::uint8_t> result{lvalue.SetHeaders(headers)};
+        result.has_value()) {
+        std::cout << lvalue << std::endl;
+        return true;
+    } else {
+        return false;
+    }
+}
+
 int main(void) {
     TestHeadlessPrint();
     TestEmptyPrint();
     TestComplexPrint();
+    TestInsertingHeaders();
 }
