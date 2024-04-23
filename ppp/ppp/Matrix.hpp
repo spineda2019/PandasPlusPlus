@@ -45,30 +45,19 @@ template <AlgebraicTerm T>
 class Matrix {
  public:
     ~Matrix() = default;
-    Matrix() noexcept
-        : data_mutex_{},
-          data_{},
-          headers_{std::nullopt},
-          max_column_width_{15} {}
+    Matrix() noexcept : data_mutex_{}, data_{}, headers_{std::nullopt} {}
 
     Matrix(std::size_t rows, std::size_t columns) noexcept
         : data_mutex_{},
           data_{std::vector<std::vector<T>>(rows,
                                             std::vector<T>(columns, T(0.0)))},
-          headers_{std::nullopt},
-          max_column_width_{15} {}
+          headers_{std::nullopt} {}
 
     Matrix(std::vector<std::vector<T>> &&data) noexcept
-        : data_mutex_{},
-          data_{data},
-          headers_{std::nullopt},
-          max_column_width_{15} {}
+        : data_mutex_{}, data_{data}, headers_{std::nullopt} {}
 
     Matrix(std::vector<std::vector<T>> &data) noexcept
-        : data_mutex_{},
-          data_{data},
-          headers_{std::nullopt},
-          max_column_width_{15} {}
+        : data_mutex_{}, data_{data}, headers_{std::nullopt} {}
 
     template <AlgebraicTerm V>
     friend inline std::ostream &operator<<(std::ostream &stream,
@@ -78,7 +67,7 @@ class Matrix {
     std::mutex data_mutex_;
     std::vector<std::vector<T>> data_;
     std::optional<std::vector<std::string_view>> headers_;
-    std::size_t max_column_width_;
+    static constexpr std::size_t MAX_COLUMN_WIDTH{15};
 };  // class Matrix
 
 template <AlgebraicTerm V>
@@ -103,7 +92,7 @@ inline std::ostream &operator<<(std::ostream &stream, const Matrix<V> &matrix) {
         }
         stream << std::endl;
         for (const std::string_view &header : matrix.headers_.value()) {
-            stream << std::setw(matrix.max_column_width_) << header << "|";
+            stream << std::setw(Matrix<V>::MAX_COLUMN_WIDTH) << header << "|";
         }
         stream << std::endl;
     }
@@ -115,21 +104,23 @@ inline std::ostream &operator<<(std::ostream &stream, const Matrix<V> &matrix) {
 
     for (const std::vector<V> &row : matrix.data_) {
         for (const V &element : row) {
-            stream << std::setw(matrix.max_column_width_) << element << "|";
+            stream << std::setw(Matrix<V>::MAX_COLUMN_WIDTH) << element << "|";
         }
     }
 
     if (rows_to_print > 1) {
         stream << std::endl;
         stream << std::setw(
-                      (matrix.max_column_width_ * matrix.data_[0].size()) / 2)
+                      (Matrix<V>::MAX_COLUMN_WIDTH * matrix.data_[0].size()) /
+                      2)
                << "...";
         stream << std::endl << std::endl;
 
         // bottom
         for (const std::vector<V> &row : matrix.data_) {
             for (const V &element : row) {
-                stream << std::setw(matrix.max_column_width_) << element << "|";
+                stream << std::setw(Matrix<V>::MAX_COLUMN_WIDTH) << element
+                       << "|";
             }
             stream << std::endl;
         }
