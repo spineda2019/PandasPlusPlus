@@ -6,7 +6,7 @@ int main(void) {
       {4, 4},
   };
 
-  read_file::Dataframe simple{small};
+  ppp::Dataframe simple{small};
 
   std::cout << simple << std::endl;
 }

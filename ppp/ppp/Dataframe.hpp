@@ -1,5 +1,5 @@
-#ifndef CSVLIBRARY_READCSV_H
-#define CSVLIBRARY_READCSV_H
+#ifndef PPP_PPP_DATAFRAME_HPP
+#define PPP_PPP_DATAFRAME_HPP
 
 #include <algorithm>
 #include <cmath>
@@ -16,7 +16,7 @@
 
 #include "Exceptions.hpp"
 
-namespace read_file {
+namespace ppp {
 
 constexpr uint64_t padding = 5;
 namespace detail {
@@ -1383,6 +1383,6 @@ inline std::ostream &operator<<(std::ostream &os, const Dataframe<V> &df) {
   return os;
 }
 
-} // namespace read_file
+} // namespace ppp
 
-#endif // CSVLIBRARY_READCSV_H
+#endif // PPP_PPP_DATAFRAME_HPP
