@@ -21,6 +21,11 @@ template <AlgebraicTerm T>
 class Matrix {
  public:
     ~Matrix() = default;
+    Matrix()
+        : data_mutex_{},
+          data_{},
+          headers_{std::nullopt},
+          max_column_width_{15} {}
 
  private:
     std::mutex data_mutex_;
