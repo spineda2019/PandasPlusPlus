@@ -27,6 +27,8 @@
 #include <mutex>
 #include <optional>
 #include <ostream>
+#include <ranges>
+#include <span>
 #include <string_view>
 #include <vector>
 
@@ -58,6 +60,21 @@ class Matrix {
 
     Matrix(std::vector<std::vector<T>> &data) noexcept
         : data_mutex_{}, data_{data}, headers_{std::nullopt} {}
+
+    [[nodiscard("You Must Check Success")]] std::optional<std::uint8_t>
+    SetHeaders(const std::span<std::string_view> headers) {
+        if (std::ranges::size(headers) != data_[0].size()) {
+            return std::nullopt;
+        } else {
+            std::vector<std::string_view> tmp_headers{};
+            tmp_headers.reserve(data_[0].size());
+            for (const std::string_view header : headers) {
+                tmp_headers.emplace_back(header);
+            }
+            headers_ = std::move(tmp_headers);
+            return 0;
+        }
+    }
 
     template <AlgebraicTerm V>
     friend inline std::ostream &operator<<(std::ostream &stream,
