@@ -8,4 +8,4 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(libppp INTERFACE)
 
-target_include_directories(libppp INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/ppp")
+target_include_directories(libppp INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
