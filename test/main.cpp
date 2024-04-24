@@ -93,9 +93,28 @@ bool TestInsertingHeaders() {
     }
 }
 
+bool TestBadShapeCatching() {
+    std::vector<std::vector<float>> data{
+        {3.0, 4.0},
+        {3.0},
+    };
+
+    std::optional<ppp::Matrix<float>> lvalue{ppp::Matrix<float>::New(data)};
+    if (lvalue.has_value()) {
+        std::cout << "Test: TestInsertingHeaders Failed..." << std::endl
+                  << std::endl;
+        return false;
+    } else {
+        std::cout << "Test: TestBadShapeCatching Passed!" << std::endl
+                  << std::endl;
+        return true;
+    }
+}
+
 int main(void) {
     TestHeadlessPrint();
     TestEmptyPrint();
     TestComplexPrint();
     TestInsertingHeaders();
+    TestBadShapeCatching();
 }
