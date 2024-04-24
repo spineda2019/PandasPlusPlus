@@ -21,6 +21,7 @@
 #ifndef PPP_PPP_MATRIX_HPP
 #define PPP_PPP_MATRIX_HPP
 
+#include <cstddef>
 #include <cstdint>
 #include <iomanip>
 #include <iostream>
@@ -30,6 +31,7 @@
 #include <ranges>
 #include <span>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace ppp {
@@ -47,19 +49,14 @@ template <AlgebraicTerm T>
 class Matrix {
  public:
     ~Matrix() = default;
-    Matrix() noexcept : data_mutex_{}, data_{}, headers_{std::nullopt} {}
 
-    Matrix(std::size_t rows, std::size_t columns) noexcept
-        : data_mutex_{},
-          data_{std::vector<std::vector<T>>(rows,
-                                            std::vector<T>(columns, T(0.0)))},
-          headers_{std::nullopt} {}
+    Matrix(Matrix<T> &&to_move)
+        : data_mutex_{}, data_{to_move.data_}, headers_{to_move.headers_} {}
 
-    Matrix(std::vector<std::vector<T>> &&data) noexcept
-        : data_mutex_{}, data_{data}, headers_{std::nullopt} {}
-
-    Matrix(std::vector<std::vector<T>> &data) noexcept
-        : data_mutex_{}, data_{data}, headers_{std::nullopt} {}
+    template <class... Args>
+    static std::optional<Matrix<T>> New(Args &...args) noexcept {
+        return Matrix<T>::FactoryHelper(std::forward<Args>(args)...);
+    }
 
     [[nodiscard("You Must Check Success")]] std::optional<std::uint8_t>
     SetHeaders(const std::span<std::string_view> headers) {
@@ -79,6 +76,64 @@ class Matrix {
     template <AlgebraicTerm V>
     friend inline std::ostream &operator<<(std::ostream &stream,
                                            const Matrix<V> &matrix);
+
+ private:
+    Matrix() noexcept : data_mutex_{}, data_{}, headers_{std::nullopt} {}
+
+    Matrix(std::size_t rows, std::size_t columns) noexcept
+        : data_mutex_{},
+          data_{std::vector<std::vector<T>>(rows,
+                                            std::vector<T>(columns, T(0.0)))},
+          headers_{std::nullopt} {}
+
+    Matrix(std::vector<std::vector<T>> &&data) noexcept
+        : data_mutex_{}, data_{data}, headers_{std::nullopt} {}
+
+    Matrix(std::vector<std::vector<T>> &data) noexcept
+        : data_mutex_{}, data_{data}, headers_{std::nullopt} {}
+
+    static std::optional<Matrix<T>> FactoryHelper() noexcept {
+        return std::make_optional<Matrix<T>>(Matrix<T>{});
+    }
+
+    static std::optional<Matrix<T>> FactoryHelper(
+        std::size_t rows, std::size_t columns) noexcept {
+        return std::make_optional<Matrix<T>>(Matrix<T>{rows, columns});
+    }
+
+    static std::optional<Matrix<T>> FactoryHelper(
+        std::vector<std::vector<T>> &&data) noexcept {
+        if (data.size() == 0) {
+            return std::nullopt;
+        } else if (std::size_t width{data[0].size()}; width == 0) {
+            return std::nullopt;
+        } else {
+            for (const std::vector<T> &row : data) {
+                if (row.size() != width) {
+                    return std::nullopt;
+                }
+            }
+
+            return std::make_optional<Matrix<T>>(Matrix<T>{data});
+        }
+    }
+
+    static std::optional<Matrix<T>> FactoryHelper(
+        std::vector<std::vector<T>> &data) noexcept {
+        if (data.size() == 0) {
+            return std::nullopt;
+        } else if (std::size_t width{data[0].size()}; width == 0) {
+            return std::nullopt;
+        } else {
+            for (const std::vector<T> &row : data) {
+                if (row.size() != width) {
+                    return std::nullopt;
+                }
+            }
+
+            return std::make_optional<Matrix<T>>(Matrix<T>{data});
+        }
+    }
 
  private:
     std::mutex data_mutex_;
