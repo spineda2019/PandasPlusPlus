@@ -7,3 +7,7 @@ processing at a lower level
 
 This is just a pet project at the moment and definitely has some kinks and 
 wrinkles that can be ironed out and optimized
+
+## Known Issues
+the use of std::views::zip in the matrix addition operator does not seem to be
+supported yet by clang, but is by msvc and gcc
