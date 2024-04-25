@@ -123,7 +123,7 @@ class Matrix {
     }
 
     static std::optional<Matrix<T>> FactoryHelper(
-        std::vector<std::vector<T>> &data) noexcept {
+        const std::vector<std::vector<T>> &data) noexcept {
         if (data.size() == 0) {
             return std::nullopt;
         } else if (std::size_t width{data[0].size()}; width == 0) {
