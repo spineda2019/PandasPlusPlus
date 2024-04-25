@@ -111,10 +111,35 @@ bool TestBadShapeCatching() {
     }
 }
 
+bool TestAddition() {
+    std::vector<std::vector<float>> data{
+        {3.0, 4.0},
+        {3.0, 4.0},
+    };
+
+    std::optional<ppp::Matrix<float>> lhs{ppp::Matrix<float>::New(data)};
+    std::optional<ppp::Matrix<float>> rhs{ppp::Matrix<float>::New(data)};
+    if (!lhs.has_value() || !rhs.has_value()) {
+        std::cout << "Test: TestAddition Failed..." << std::endl << std::endl;
+        return false;
+    } else {
+        auto sum = lhs.value() + rhs.value();
+        if (sum.has_value()) {
+            std::cout << "Test: TestAddition Succeeded" << std::endl
+                      << std::endl;
+            std::cout << sum.value() << std::endl;
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
 int main(void) {
     TestHeadlessPrint();
     TestEmptyPrint();
     TestComplexPrint();
     TestInsertingHeaders();
     TestBadShapeCatching();
+    TestAddition();
 }
