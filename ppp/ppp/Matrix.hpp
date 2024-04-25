@@ -81,6 +81,10 @@ class Matrix {
     friend inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
                                                      const Matrix<V> &rhs);
 
+    template <AlgebraicTerm V>
+    friend inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
+                                                     const Matrix<V> &rhs);
+
  private:
     Matrix() noexcept : data_mutex_{}, data_{}, headers_{std::nullopt} {}
 
@@ -221,6 +225,40 @@ inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
                 return std::views::zip_transform(
                     [](const auto &left_val, const auto &right_val) {
                         return left_val + right_val;
+                    },
+                    left_row, right_row);
+            },
+            lhs.data_, rhs.data_);
+
+        for (const auto &[summed_row, new_row] :
+             std::views::zip(sum, new_data)) {
+            for (const auto &[summed_val, new_val] :
+                 std::views::zip(summed_row, new_row)) {
+                new_val = summed_val;
+            }
+            std::cout << std::endl;
+        }
+
+        return std::make_optional<Matrix<V>>(Matrix<V>{new_data});
+    }
+}
+
+template <AlgebraicTerm V>
+inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
+                                          const Matrix<V> &rhs) {
+    if (lhs.data_.size() != rhs.data_.size()) {
+        return std::nullopt;
+    } else if (lhs.data_[0].size() != rhs.data_[0].size()) {
+        return std::nullopt;
+    } else {
+        std::vector<std::vector<V>> new_data{
+            lhs.data_.size(), std::vector<V>(lhs.data_[0].size())};
+
+        auto sum = std::views::zip_transform(
+            [](const auto &left_row, const auto &right_row) {
+                return std::views::zip_transform(
+                    [](const auto &left_val, const auto &right_val) {
+                        return left_val - right_val;
                     },
                     left_row, right_row);
             },
