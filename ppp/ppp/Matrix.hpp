@@ -90,10 +90,10 @@ class Matrix {
                                             std::vector<T>(columns, T(0.0)))},
           headers_{std::nullopt} {}
 
-    Matrix(std::vector<std::vector<T>> &&data) noexcept
+    explicit Matrix(std::vector<std::vector<T>> &&data) noexcept
         : data_mutex_{}, data_{data}, headers_{std::nullopt} {}
 
-    Matrix(std::vector<std::vector<T>> &data) noexcept
+    explicit Matrix(std::vector<std::vector<T>> &data) noexcept
         : data_mutex_{}, data_{data}, headers_{std::nullopt} {}
 
     static std::optional<Matrix<T>> FactoryHelper() noexcept {
