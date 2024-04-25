@@ -21,10 +21,8 @@
 #ifndef PPP_PPP_MATRIX_HPP
 #define PPP_PPP_MATRIX_HPP
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
-#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <mutex>
@@ -33,9 +31,7 @@
 #include <ranges>
 #include <span>
 #include <string_view>
-#include <tuple>
 #include <utility>
-#include <variant>
 #include <vector>
 
 namespace ppp {
