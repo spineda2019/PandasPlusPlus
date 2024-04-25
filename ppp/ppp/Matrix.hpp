@@ -18,8 +18,8 @@
  *  along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PPP_PPP_MATRIX_HPP
-#define PPP_PPP_MATRIX_HPP
+#ifndef PPP_PPP_MATRIX_HPP_
+#define PPP_PPP_MATRIX_HPP_
 
 #include <cstddef>
 #include <cstdint>
@@ -240,4 +240,4 @@ inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
 }
 }  // namespace ppp
 
-#endif  // PPP_PPP_MATRIX_HPP
+#endif  // PPP_PPP_MATRIX_HPP_
