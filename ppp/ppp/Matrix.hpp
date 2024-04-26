@@ -88,23 +88,23 @@ class Matrix {
 
     template <AlgebraicTerm V>
     friend inline std::ostream &operator<<(std::ostream &stream,
-                                           const Matrix<V> &matrix);
+                                           const Matrix<V> &matrix) noexcept;
 
     template <AlgebraicTerm V>
-    friend inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
-                                                     const Matrix<V> &rhs);
+    friend inline std::optional<Matrix<V>> operator+(
+        const Matrix<V> &lhs, const Matrix<V> &rhs) noexcept;
 
     template <AlgebraicTerm V>
-    friend inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
-                                                     const Matrix<V> &rhs);
+    friend inline std::optional<Matrix<V>> operator-(
+        const Matrix<V> &lhs, const Matrix<V> &rhs) noexcept;
 
     template <AlgebraicTerm V, SimpleNumber U>
     friend inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
-                                                     U rhs);
+                                                     U rhs) noexcept;
 
     template <AlgebraicTerm V, SimpleNumber U>
     friend inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
-                                                     U rhs);
+                                                     U rhs) noexcept;
 
  private:
     Matrix() noexcept : data_mutex_{}, data_{}, headers_{std::nullopt} {}
@@ -293,7 +293,7 @@ inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
         std::vector<std::vector<V>> new_data{
             lhs.data_.size(), std::vector<V>(lhs.data_[0].size())};
 
-        auto sum = std::views::zip_transform(
+        const auto sum = std::views::zip_transform(
             [](const auto &left_row, const auto &right_row) {
                 return std::views::zip_transform(
                     [](const auto &left_val, const auto &right_val) {
@@ -318,8 +318,8 @@ inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
 template <AlgebraicTerm V, SimpleNumber U>
 inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
                                           U rhs) noexcept {
-    std::size_t height{lhs.data_.size()};
-    std::size_t width{lhs.data_[0].size()};
+    const std::size_t height{lhs.data_.size()};
+    const std::size_t width{lhs.data_[0].size()};
 
     const std::optional<Matrix<V>> right{Matrix<V>::New(height, width, rhs)};
 
@@ -333,8 +333,8 @@ inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
 template <AlgebraicTerm V, SimpleNumber U>
 inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
                                           U rhs) noexcept {
-    std::size_t height{lhs.data_.size()};
-    std::size_t width{lhs.data_[0].size()};
+    const std::size_t height{lhs.data_.size()};
+    const std::size_t width{lhs.data_[0].size()};
 
     const std::optional<Matrix<V>> right{Matrix<V>::New(height, width, rhs)};
 
