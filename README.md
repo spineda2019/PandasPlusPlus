@@ -9,5 +9,7 @@ This is just a pet project at the moment and definitely has some kinks and
 wrinkles that can be ironed out and optimized
 
 ## Known Issues
-the use of std::views::zip in the matrix addition operator does not seem to be
-supported yet by clang, but is by msvc and gcc
+The files Dataframe.hpp and Exceptions.hpp should be considered legacy and no
+longer supported. They were written a long time ago and are being re-written
+in C++20 from scratch. Matrix.hpp is where continuing work will be done until
+Dataframe and Exceptions are safe to delete.
