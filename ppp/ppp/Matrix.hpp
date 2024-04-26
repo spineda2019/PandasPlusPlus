@@ -122,7 +122,7 @@ class Matrix {
         : data_mutex_{}, data_{data}, headers_{std::nullopt} {}
 
     template <SimpleNumber U>
-    Matrix(std::size_t rows, std::size_t columns, U value)
+    Matrix(std::size_t rows, std::size_t columns, U value) noexcept
         : data_mutex_{},
           data_{std::vector<std::vector<U>>(rows,
                                             std::vector<U>(columns, value))},
@@ -173,7 +173,8 @@ class Matrix {
 
     template <SimpleNumber U>
     static std::optional<Matrix<T>> FactoryHelper(std::size_t rows,
-                                                  std::size_t columns, U val) {
+                                                  std::size_t columns,
+                                                  U val) noexcept {
         if (rows == 0 || columns == 0) {
             return std::nullopt;
         }
@@ -188,7 +189,8 @@ class Matrix {
 };  // class Matrix
 
 template <AlgebraicTerm V>
-inline std::ostream &operator<<(std::ostream &stream, const Matrix<V> &matrix) {
+inline std::ostream &operator<<(std::ostream &stream,
+                                const Matrix<V> &matrix) noexcept {
     constexpr std::uint8_t max_height{20};
     std::size_t rows_to_print{};
 
@@ -248,7 +250,7 @@ inline std::ostream &operator<<(std::ostream &stream, const Matrix<V> &matrix) {
 
 template <AlgebraicTerm V>
 inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
-                                          const Matrix<V> &rhs) {
+                                          const Matrix<V> &rhs) noexcept {
     if (lhs.data_.size() != rhs.data_.size()) {
         return std::nullopt;
     } else if (lhs.data_[0].size() != rhs.data_[0].size()) {
@@ -282,7 +284,7 @@ inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
 
 template <AlgebraicTerm V>
 inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
-                                          const Matrix<V> &rhs) {
+                                          const Matrix<V> &rhs) noexcept {
     if (lhs.data_.size() != rhs.data_.size()) {
         return std::nullopt;
     } else if (lhs.data_[0].size() != rhs.data_[0].size()) {
@@ -314,7 +316,8 @@ inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
     }
 }
 template <AlgebraicTerm V, SimpleNumber U>
-inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs, U rhs) {
+inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
+                                          U rhs) noexcept {
     std::size_t height{lhs.data_.size()};
     std::size_t width{lhs.data_[0].size()};
 
@@ -328,7 +331,8 @@ inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs, U rhs) {
 }
 
 template <AlgebraicTerm V, SimpleNumber U>
-inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs, U rhs) {
+inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
+                                          U rhs) noexcept {
     std::size_t height{lhs.data_.size()};
     std::size_t width{lhs.data_[0].size()};
 
