@@ -180,11 +180,42 @@ bool TestSubtraction() {
     }
 }
 
+bool TestNonMatrixSubtraction() {
+    std::vector<std::vector<double>> data{
+        {3.0, 4.0},
+        {3.0, 4.0},
+    };
+
+    const std::optional<ppp::Matrix<double>> lhs{
+        ppp::Matrix<double>::New(data)};
+
+    if (lhs.has_value()) {
+        const std::optional<ppp::Matrix<double>> diff{lhs.value() - 4.0};
+        if (diff.has_value()) {
+            passes++;
+            std::cout << "Test: TestNonMatrixSubtraction Passed!" << std::endl
+                      << std::endl;
+            std::cout << diff.value() << std::endl;
+            return true;
+        } else {
+            fails++;
+            std::cout << "Test: TestNonMatrixSubtraction Failed..." << std::endl
+                      << std::endl;
+            return false;
+        }
+    } else {
+        fails++;
+        std::cout << "Test: TestNonMatrixSubtraction Failed..." << std::endl
+                  << std::endl;
+        return false;
+    }
+}
+
 int main(void) {
     bool test_result{TestHeadlessPrint() && TestEmptyPrint() &&
                      TestComplexPrint() && TestInsertingHeaders() &&
                      TestBadShapeCatching() && TestAddition() &&
-                     TestSubtraction()};
+                     TestSubtraction() && TestNonMatrixSubtraction()};
 
     std::cout << std::endl
               << "--------------------------------- Test Summary "
