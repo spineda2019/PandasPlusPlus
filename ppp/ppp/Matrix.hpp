@@ -21,10 +21,12 @@
 #ifndef PPP_PPP_MATRIX_HPP_
 #define PPP_PPP_MATRIX_HPP_
 
+#include <algorithm>
 #include <complex>
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
+#include <execution>
 #include <iomanip>
 #include <iostream>
 #include <mutex>
@@ -259,24 +261,18 @@ inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
         std::vector<std::vector<V>> new_data{
             lhs.data_.size(), std::vector<V>(lhs.data_[0].size())};
 
-        auto sum = std::views::zip_transform(
-            [](const auto &left_row, const auto &right_row) {
-                return std::views::zip_transform(
-                    [](const auto &left_val, const auto &right_val) {
-                        return left_val + right_val;
-                    },
-                    left_row, right_row);
-            },
-            lhs.data_, rhs.data_);
-
-        for (const auto &[summed_row, new_row] :
-             std::views::zip(sum, new_data)) {
-            for (const auto &[summed_val, new_val] :
-                 std::views::zip(summed_row, new_row)) {
-                new_val = summed_val;
-            }
-            std::cout << std::endl;
-        }
+        std::transform(std::execution::par_unseq, lhs.data_.begin(),
+                       lhs.data_.end(), rhs.data_.begin(), new_data.begin(),
+                       [](const std::vector<V> &left_row,
+                          const std::vector<V> &right_row) {
+                           std::vector<V> row(left_row.size());
+                           std::transform(left_row.begin(), left_row.end(),
+                                          right_row.begin(), row.begin(),
+                                          [](const V &left, const V &right) {
+                                              return left + right;
+                                          });
+                           return std::move(row);
+                       });
 
         return std::make_optional<Matrix<V>>(Matrix<V>{new_data});
     }
@@ -293,24 +289,18 @@ inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
         std::vector<std::vector<V>> new_data{
             lhs.data_.size(), std::vector<V>(lhs.data_[0].size())};
 
-        const auto sum = std::views::zip_transform(
-            [](const auto &left_row, const auto &right_row) {
-                return std::views::zip_transform(
-                    [](const auto &left_val, const auto &right_val) {
-                        return left_val - right_val;
-                    },
-                    left_row, right_row);
-            },
-            lhs.data_, rhs.data_);
-
-        for (const auto &[summed_row, new_row] :
-             std::views::zip(sum, new_data)) {
-            for (const auto &[summed_val, new_val] :
-                 std::views::zip(summed_row, new_row)) {
-                new_val = summed_val;
-            }
-            std::cout << std::endl;
-        }
+        std::transform(std::execution::par_unseq, lhs.data_.begin(),
+                       lhs.data_.end(), rhs.data_.begin(), new_data.begin(),
+                       [](const std::vector<V> &left_row,
+                          const std::vector<V> &right_row) {
+                           std::vector<V> row(left_row.size());
+                           std::transform(left_row.begin(), left_row.end(),
+                                          right_row.begin(), row.begin(),
+                                          [](const V &left, const V &right) {
+                                              return left - right;
+                                          });
+                           return std::move(row);
+                       });
 
         return std::make_optional<Matrix<V>>(Matrix<V>{new_data});
     }
