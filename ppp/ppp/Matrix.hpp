@@ -21,6 +21,8 @@
 #ifndef PPP_PPP_MATRIX_HPP_
 #define PPP_PPP_MATRIX_HPP_
 
+#include <complex>
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <iomanip>
@@ -31,6 +33,7 @@
 #include <ranges>
 #include <span>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -44,6 +47,16 @@ concept AlgebraicTerm = requires(T value) {
     value = value - T(1);
     std::cout << value;
 };
+
+template <class T>
+concept IsComplex = requires(T value) {
+    T::value_type;
+    std::is_same_v<T, std::complex<typename T::value_type>> == true;
+};
+
+template <class T>
+concept SimpleNumber =
+    std::integral<T> || std::floating_point<T> || IsComplex<T>;
 
 template <AlgebraicTerm T>
 class Matrix {
@@ -85,6 +98,14 @@ class Matrix {
     friend inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
                                                      const Matrix<V> &rhs);
 
+    template <AlgebraicTerm V, SimpleNumber U>
+    friend inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
+                                                     U rhs);
+
+    template <AlgebraicTerm V, SimpleNumber U>
+    friend inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
+                                                     U rhs);
+
  private:
     Matrix() noexcept : data_mutex_{}, data_{}, headers_{std::nullopt} {}
 
@@ -99,6 +120,13 @@ class Matrix {
 
     explicit Matrix(std::vector<std::vector<T>> &data) noexcept
         : data_mutex_{}, data_{data}, headers_{std::nullopt} {}
+
+    template <SimpleNumber U>
+    Matrix(std::size_t rows, std::size_t columns, U value)
+        : data_mutex_{},
+          data_{std::vector<std::vector<U>>(rows,
+                                            std::vector<U>(columns, value))},
+          headers_{std::nullopt} {}
 
     static std::optional<Matrix<T>> FactoryHelper() noexcept {
         return std::make_optional<Matrix<T>>(Matrix<T>{});
@@ -141,6 +169,15 @@ class Matrix {
 
             return std::make_optional<Matrix<T>>(Matrix<T>{data});
         }
+    }
+
+    template <SimpleNumber U>
+    static std::optional<Matrix<T>> FactoryHelper(std::size_t rows,
+                                                  std::size_t columns, U val) {
+        if (rows == 0 || columns == 0) {
+            return std::nullopt;
+        }
+        return std::make_optional<Matrix<T>>(Matrix<T>{rows, columns, val});
     }
 
  private:
@@ -276,6 +313,34 @@ inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
         return std::make_optional<Matrix<V>>(Matrix<V>{new_data});
     }
 }
+template <AlgebraicTerm V, SimpleNumber U>
+inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs, U rhs) {
+    std::size_t height{lhs.data_.size()};
+    std::size_t width{lhs.data_[0].size()};
+
+    const std::optional<Matrix<V>> right{Matrix<V>::New(height, width, rhs)};
+
+    if (right.has_value()) {
+        return lhs - right.value();
+    } else {
+        return std::nullopt;
+    }
+}
+
+template <AlgebraicTerm V, SimpleNumber U>
+inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs, U rhs) {
+    std::size_t height{lhs.data_.size()};
+    std::size_t width{lhs.data_[0].size()};
+
+    const std::optional<Matrix<V>> right{Matrix<V>::New(height, width, rhs)};
+
+    if (right.has_value()) {
+        return lhs + right.value();
+    } else {
+        return std::nullopt;
+    }
+}
+
 }  // namespace ppp
 
 #endif  // PPP_PPP_MATRIX_HPP_
