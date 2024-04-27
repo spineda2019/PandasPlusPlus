@@ -8,5 +8,6 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 add_subdirectory(ppp)
+add_subdirectory(c-exports)
 add_subdirectory(test)
 add_subdirectory(python-module)
