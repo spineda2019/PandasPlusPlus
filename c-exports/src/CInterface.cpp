@@ -5,10 +5,11 @@
 #include <iostream>
 #include <ppp/Dataframe.hpp>
 
-Dataframe *create_dataframe_float(const char *file_path, bool file_has_header) {
-    return reinterpret_cast<Dataframe *>(
-        new ppp::Dataframe<float>(file_path, file_has_header));
-}
+// Dataframe *create_dataframe_float(const char *file_path, bool
+// file_has_header) {
+//     return reinterpret_cast<Dataframe *>(
+//         new ppp::Dataframe<float>(file_path, file_has_header));
+// }
 
 void delete_Dataframe_float(Dataframe *frame) {
     delete reinterpret_cast<ppp::Dataframe<float> *>(frame);
