@@ -8,7 +8,7 @@ find_package(Python3 COMPONENTS Development Interpreter)
 if(NOT Python3_FOUND)
     message(FATAL_ERROR "Python3 not found! Ensure it is installed")
 else()
-    message("Python3 include dirs found @ ${Python_INCLUDE_DIRS}")
+    message("Python3 include dirs found @ ${Python3_INCLUDE_DIRS}")
 endif()
     
 
