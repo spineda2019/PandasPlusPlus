@@ -18,3 +18,5 @@ set(PY_SOURCES
 add_library(pyppp SHARED ${PY_SOURCES})
 
 target_include_directories(pyppp PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/include" ${Python3_INCLUDE_DIRS})
+
+target_link_directories(pyppp PUBLIC "${Python3_LIBRARY_DIRS}")
