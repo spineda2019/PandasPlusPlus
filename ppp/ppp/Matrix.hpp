@@ -117,6 +117,10 @@ class Matrix {
     friend inline bool operator==(const Matrix<V> &lhs,
                                   const Matrix<V> &rhs) noexcept;
 
+    template <AlgebraicTerm V>
+    friend inline std::optional<Matrix<V>> operator*(
+        const Matrix<V> &lhs, const Matrix<V> &rhs) noexcept;
+
  private:
     Matrix() noexcept
         : data_mutex_{},
@@ -366,6 +370,13 @@ inline bool operator==(const Matrix<V> &lhs, const Matrix<V> &rhs) noexcept {
                                std::views::zip(rows.first, rows.second));
                 }) != std::ranges::end(std::views::zip(lhs.data_, rhs.data_)));
     }
+}
+
+template <AlgebraicTerm V>
+inline std::optional<Matrix<V>> operator*(const Matrix<V> &lhs,
+                                          const Matrix<V> &rhs) noexcept {
+    /* TODO: implement */
+    return std::nullopt;
 }
 
 }  // namespace ppp
