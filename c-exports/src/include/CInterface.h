@@ -28,6 +28,14 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef struct FMatrix_t {
+    float **data_;
+    char **headers_;
+} FMatrix_t;
+
+C_API FMatrix_t *FMatrix(const float **data, const char **headers);
+
 typedef struct Dataframe_t {
     unsigned long long height_;
     unsigned long long width_;
