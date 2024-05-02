@@ -5,6 +5,7 @@
 #include <functional>
 #include <iostream>
 #include <ostream>
+#include <ppp/CsvFile.hpp>
 #include <ppp/Matrix.hpp>
 #include <span>
 #include <string_view>
@@ -20,6 +21,50 @@ auto time_operation = [](const std::function<void()>& operation) {
     auto duration = duration_cast<std::chrono::microseconds>(stop - start);
     return duration.count();
 };
+
+bool TestEquality() {
+    std::optional<ppp::Matrix<int>> empty_left{ppp::Matrix<int>::New()};
+    std::optional<ppp::Matrix<int>> empty_right{ppp::Matrix<int>::New()};
+
+    if ((!empty_left.has_value()) || (!empty_right.has_value())) {
+        std::cout << "Test: TestEquality Failed..." << std::endl << std::endl;
+        fails++;
+        return false;
+    } else if (empty_left.value() != empty_right.value()) {
+        std::cout << "Test: TestEquality Failed..." << std::endl << std::endl;
+        fails++;
+        return false;
+    } else {
+        std::vector<std::vector<std::uint16_t>> some{{
+            {1, 2, 3},
+            {1, 2, 3},
+            {1, 2, 3},
+        }};
+
+        std::optional<ppp::Matrix<std::uint16_t>> left{
+            ppp::Matrix<std::uint16_t>::New(some)};
+        std::optional<ppp::Matrix<std::uint16_t>> right{
+            ppp::Matrix<std::uint16_t>::New(std::move(some))};
+        if ((!left.has_value()) || (!right.has_value())) {
+            std::cout << "Test: TestEquality Failed..." << std::endl
+                      << std::endl;
+            fails++;
+            return false;
+        } else {
+            bool result = left.value() == right.value();
+            if (result) {
+                std::cout << "Test: TestEquality Passed!" << std::endl
+                          << "Matrix Used: " << std::endl
+                          << std::endl;
+                std::cout << left.value() << std::endl;
+                passes++;
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+}
 
 bool TestHeadlessPrint() {
     std::vector<std::vector<float>> data{
@@ -222,6 +267,12 @@ bool TestNonMatrixSubtraction() {
     }
 }
 
+bool TestCsvConstruction() {
+    const char* bar = "";
+    (void)ppp::CsvFile::New("");
+    return true;
+}
+
 void BenchMarkOperations() {
     std::vector<std::vector<float>> data{
         {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 0.0f},
@@ -266,10 +317,11 @@ void BenchMarkOperations() {
 }
 
 int main(void) {
-    bool test_result{TestHeadlessPrint() && TestEmptyPrint() &&
-                     TestComplexPrint() && TestInsertingHeaders() &&
-                     TestBadShapeCatching() && TestAddition() &&
-                     TestSubtraction() && TestNonMatrixSubtraction()};
+    bool test_result{TestEquality() && TestHeadlessPrint() &&
+                     TestEmptyPrint() && TestComplexPrint() &&
+                     TestInsertingHeaders() && TestBadShapeCatching() &&
+                     TestAddition() && TestSubtraction() &&
+                     TestNonMatrixSubtraction() && TestCsvConstruction()};
 
     std::cout << "Benchmarking matrix operations..." << std::endl;
     BenchMarkOperations();
