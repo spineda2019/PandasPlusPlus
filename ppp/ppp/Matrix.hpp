@@ -66,7 +66,11 @@ class Matrix {
     ~Matrix() = default;
 
     Matrix(Matrix<T> &&to_move)
-        : data_mutex_{}, data_{to_move.data_}, headers_{to_move.headers_} {}
+        : data_mutex_{},
+          data_{to_move.data_},
+          headers_{to_move.headers_},
+          height_{to_move.height_},
+          width_{to_move.width_} {}
 
     template <class... Args>
     static std::optional<Matrix<T>> New(Args &...args) noexcept {
@@ -109,26 +113,43 @@ class Matrix {
                                                      U rhs) noexcept;
 
  private:
-    Matrix() noexcept : data_mutex_{}, data_{}, headers_{std::nullopt} {}
+    Matrix() noexcept
+        : data_mutex_{},
+          data_{},
+          headers_{std::nullopt},
+          height_{0},
+          width_{0} {}
 
     Matrix(std::size_t rows, std::size_t columns) noexcept
         : data_mutex_{},
           data_{std::vector<std::vector<T>>(rows,
                                             std::vector<T>(columns, T(0.0)))},
-          headers_{std::nullopt} {}
+          headers_{std::nullopt},
+          height_{rows},
+          width_{columns} {}
 
     explicit Matrix(std::vector<std::vector<T>> &&data) noexcept
-        : data_mutex_{}, data_{data}, headers_{std::nullopt} {}
+        : data_mutex_{},
+          data_{data},
+          headers_{std::nullopt},
+          height_{data.size()},
+          width_{data[0].size()} {}
 
     explicit Matrix(std::vector<std::vector<T>> &data) noexcept
-        : data_mutex_{}, data_{data}, headers_{std::nullopt} {}
+        : data_mutex_{},
+          data_{data},
+          headers_{std::nullopt},
+          height_{data.size()},
+          width_{data[0].size()} {}
 
     template <SimpleNumber U>
     Matrix(std::size_t rows, std::size_t columns, U value) noexcept
         : data_mutex_{},
           data_{std::vector<std::vector<U>>(rows,
                                             std::vector<U>(columns, value))},
-          headers_{std::nullopt} {}
+          headers_{std::nullopt},
+          height_{rows},
+          width_{columns} {}
 
     static std::optional<Matrix<T>> FactoryHelper() noexcept {
         return std::make_optional<Matrix<T>>(Matrix<T>{});
@@ -136,6 +157,9 @@ class Matrix {
 
     static std::optional<Matrix<T>> FactoryHelper(
         std::size_t rows, std::size_t columns) noexcept {
+        if (rows == 0 || columns == 0) {
+            return std::nullopt;
+        }
         return std::make_optional<Matrix<T>>(Matrix<T>{rows, columns});
     }
 
@@ -185,6 +209,8 @@ class Matrix {
 
  private:
     std::mutex data_mutex_;
+    std::size_t height_;
+    std::size_t width_;
     std::vector<std::vector<T>> data_;
     std::optional<std::vector<std::string_view>> headers_;
     static constexpr std::size_t MAX_COLUMN_WIDTH{15};
