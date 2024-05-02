@@ -157,10 +157,12 @@ class Matrix {
 
     static std::optional<Matrix<T>> FactoryHelper(
         std::size_t rows, std::size_t columns) noexcept {
-        if (rows == 0 || columns == 0) {
+        // Prevent matrices that don't make physical sense!
+        if (rows == 0 && columns != 0) {
             return std::nullopt;
+        } else {
+            return std::make_optional<Matrix<T>>(Matrix<T>{rows, columns});
         }
-        return std::make_optional<Matrix<T>>(Matrix<T>{rows, columns});
     }
 
     static std::optional<Matrix<T>> FactoryHelper(
