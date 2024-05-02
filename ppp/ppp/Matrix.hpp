@@ -140,7 +140,7 @@ class Matrix {
           height_{data.size()},
           width_{data[0].size()} {}
 
-    explicit Matrix(std::vector<std::vector<T>> &data) noexcept
+    explicit Matrix(const std::vector<std::vector<T>> &data) noexcept
         : data_mutex_{},
           data_{data},
           headers_{std::nullopt},
