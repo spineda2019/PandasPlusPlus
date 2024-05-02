@@ -11,6 +11,8 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 set(CEXPORT_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/CInterface.cpp")
 
+add_compile_definitions(C_EXPORTS)
+
 add_library(libcexports SHARED ${CEXPORT_SOURCES})
 target_link_libraries(libcexports PRIVATE libppp)
 target_include_directories(libcexports PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/include")
