@@ -260,22 +260,7 @@ inline std::ostream &operator<<(std::ostream &stream,
         for (const V &element : row) {
             stream << std::setw(Matrix<V>::MAX_COLUMN_WIDTH) << element << "|";
         }
-    }
-
-    if (rows_to_print > 1) {
         stream << std::endl;
-        stream << std::setw((Matrix<V>::MAX_COLUMN_WIDTH * matrix.width_) / 2)
-               << "...";
-        stream << std::endl << std::endl;
-
-        // bottom
-        for (const std::vector<V> &row : matrix.data_) {
-            for (const V &element : row) {
-                stream << std::setw(Matrix<V>::MAX_COLUMN_WIDTH) << element
-                       << "|";
-            }
-            stream << std::endl;
-        }
     }
 
     return stream;
