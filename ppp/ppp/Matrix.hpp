@@ -168,27 +168,25 @@ class Matrix {
     static std::optional<Matrix<T>> FactoryHelper(
         std::vector<std::vector<T>> &&data) noexcept {
         if (data.size() == 0) {
-            return std::nullopt;
-        } else if (std::size_t width{data[0].size()}; width == 0) {
-            return std::nullopt;
+            return std::make_optional<Matrix<T>>(Matrix<T>{});
         } else {
+            std::size_t width{data[0].size()};
             for (const std::vector<T> &row : data) {
                 if (row.size() != width) {
                     return std::nullopt;
                 }
             }
 
-            return std::make_optional<Matrix<T>>(Matrix<T>{data});
+            return std::make_optional<Matrix<T>>(Matrix<T>{std::move(data)});
         }
     }
 
     static std::optional<Matrix<T>> FactoryHelper(
         const std::vector<std::vector<T>> &data) noexcept {
         if (data.size() == 0) {
-            return std::nullopt;
-        } else if (std::size_t width{data[0].size()}; width == 0) {
-            return std::nullopt;
+            return std::make_optional<Matrix<T>>(Matrix<T>{});
         } else {
+            std::size_t width{data[0].size()};
             for (const std::vector<T> &row : data) {
                 if (row.size() != width) {
                     return std::nullopt;
@@ -203,10 +201,13 @@ class Matrix {
     static std::optional<Matrix<T>> FactoryHelper(std::size_t rows,
                                                   std::size_t columns,
                                                   U val) noexcept {
-        if (rows == 0 || columns == 0) {
-            return std::nullopt;
+        if (rows == 0) {
+            return std::make_optional<Matrix<T>>(Matrix<T>{});
+        } else if (columns == 0) {
+            return std::make_optional<Matrix<T>>(Matrix<T>{rows, columns});
+        } else {
+            return std::make_optional<Matrix<T>>(Matrix<T>{rows, columns, val});
         }
-        return std::make_optional<Matrix<T>>(Matrix<T>{rows, columns, val});
     }
 
  private:
@@ -224,16 +225,16 @@ inline std::ostream &operator<<(std::ostream &stream,
     constexpr std::uint8_t max_height{20};
     std::size_t rows_to_print{};
 
-    if (std::size_t height = matrix.data_.size(); height == 0) {
+    if (matrix.height_ == 0) {
         return stream;
-    } else if (height >= max_height) {
+    } else if (matrix.height_ >= max_height) {
         rows_to_print = max_height / 2;
     } else {
-        rows_to_print = height / 2;
+        rows_to_print = matrix.height_ / 2;
     }
 
-    const std::size_t max_table_width{
-        (matrix.data_.size() * matrix.data_[0].size()) + (2 * padding)};
+    const std::size_t max_table_width{(matrix.height_ * matrix.width_) +
+                                      (2 * padding)};
 
     if (matrix.headers_.has_value()) {
         for (std::size_t i{0}; i < max_table_width; i++) {
@@ -259,9 +260,7 @@ inline std::ostream &operator<<(std::ostream &stream,
 
     if (rows_to_print > 1) {
         stream << std::endl;
-        stream << std::setw(
-                      (Matrix<V>::MAX_COLUMN_WIDTH * matrix.data_[0].size()) /
-                      2)
+        stream << std::setw((Matrix<V>::MAX_COLUMN_WIDTH * matrix.width_) / 2)
                << "...";
         stream << std::endl << std::endl;
 
@@ -281,13 +280,11 @@ inline std::ostream &operator<<(std::ostream &stream,
 template <AlgebraicTerm V>
 inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
                                           const Matrix<V> &rhs) noexcept {
-    if (lhs.data_.size() != rhs.data_.size()) {
-        return std::nullopt;
-    } else if (lhs.data_[0].size() != rhs.data_[0].size()) {
+    if ((lhs.height_ != rhs.height_) || (lhs.width_ != rhs.width_)) {
         return std::nullopt;
     } else {
-        std::vector<std::vector<V>> new_data{
-            lhs.data_.size(), std::vector<V>(lhs.data_[0].size())};
+        std::vector<std::vector<V>> new_data{lhs.height_,
+                                             std::vector<V>(lhs.width_)};
 
         std::transform(std::execution::par_unseq, lhs.data_.begin(),
                        lhs.data_.end(), rhs.data_.begin(), new_data.begin(),
@@ -309,13 +306,11 @@ inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
 template <AlgebraicTerm V>
 inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
                                           const Matrix<V> &rhs) noexcept {
-    if (lhs.data_.size() != rhs.data_.size()) {
-        return std::nullopt;
-    } else if (lhs.data_[0].size() != rhs.data_[0].size()) {
+    if ((lhs.height_ != rhs.height_) || (lhs.width_ != rhs.width_)) {
         return std::nullopt;
     } else {
-        std::vector<std::vector<V>> new_data{
-            lhs.data_.size(), std::vector<V>(lhs.data_[0].size())};
+        std::vector<std::vector<V>> new_data{lhs.height_,
+                                             std::vector<V>(lhs.width_)};
 
         std::transform(std::execution::par_unseq, lhs.data_.begin(),
                        lhs.data_.end(), rhs.data_.begin(), new_data.begin(),
@@ -336,8 +331,8 @@ inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
 template <AlgebraicTerm V, SimpleNumber U>
 inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
                                           U rhs) noexcept {
-    const std::size_t height{lhs.data_.size()};
-    const std::size_t width{lhs.data_[0].size()};
+    const std::size_t height{lhs.height_};
+    const std::size_t width{lhs.width_};
 
     const std::optional<Matrix<V>> right{Matrix<V>::New(height, width, rhs)};
 
@@ -351,8 +346,8 @@ inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
 template <AlgebraicTerm V, SimpleNumber U>
 inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
                                           U rhs) noexcept {
-    const std::size_t height{lhs.data_.size()};
-    const std::size_t width{lhs.data_[0].size()};
+    const std::size_t height{lhs.height_};
+    const std::size_t width{lhs.width_};
 
     const std::optional<Matrix<V>> right{Matrix<V>::New(height, width, rhs)};
 
