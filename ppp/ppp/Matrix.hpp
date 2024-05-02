@@ -73,7 +73,7 @@ class Matrix {
           width_{to_move.width_} {}
 
     template <class... Args>
-    static std::optional<Matrix<T>> New(Args &...args) noexcept {
+    static std::optional<Matrix<T>> New(Args... args) noexcept {
         return Matrix<T>::FactoryHelper(std::forward<Args>(args)...);
     }
 
@@ -111,6 +111,10 @@ class Matrix {
     template <AlgebraicTerm V, SimpleNumber U>
     friend inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
                                                      U rhs) noexcept;
+
+    template <AlgebraicTerm V>
+    friend inline bool operator==(const Matrix<V> &lhs,
+                                  const Matrix<V> &rhs) noexcept;
 
  private:
     Matrix() noexcept
@@ -355,6 +359,26 @@ inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
         return lhs + right.value();
     } else {
         return std::nullopt;
+    }
+}
+
+template <AlgebraicTerm V>
+inline bool operator==(const Matrix<V> &lhs, const Matrix<V> &rhs) noexcept {
+    if ((lhs.height_ != rhs.height_) || (lhs.width_ != rhs.width_)) {
+        return false;
+    } else {
+        return !(
+            std::ranges::find_if(
+                std::views::zip(lhs.data_, rhs.data_),
+                [](std::pair<std::span<const V>, std::span<const V>> rows) {
+                    return std::ranges::find_if(
+                               std::views::zip(rows.first, rows.second),
+                               [](std::pair<const V, const V> vals) {
+                                   return vals.first != vals.second;
+                               }) !=
+                           std::ranges::end(
+                               std::views::zip(rows.first, rows.second));
+                }) != std::ranges::end(std::views::zip(lhs.data_, rhs.data_)));
     }
 }
 
