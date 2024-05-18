@@ -1,0 +1,6 @@
+#ifndef TEST_SRC_INCLUDE_COLUMN_TESTS_HPP_
+#define TEST_SRC_INCLUDE_COLUMN_TESTS_HPP_
+
+bool ColumnMasterTest(void);
+
+#endif  // TEST_SRC_INCLUDE_COLUMN_TESTS_HPP_
