@@ -9,6 +9,7 @@
 #include "include/benchmark.hpp"
 #endif  // BENCHMARK
 
+#include "include/column_tests.hpp"
 #include "include/matrix_tests.hpp"
 
 bool TestCsvConstruction() {
@@ -21,7 +22,8 @@ int main(void) {
     std::unique_ptr<std::size_t> passes{std::make_unique<std::size_t>(0)};
     std::unique_ptr<std::size_t> fails{std::make_unique<std::size_t>(0)};
 
-    bool test_result{matrix_test::MatrixMasterTest(passes, fails)};
+    bool test_result{matrix_test::MatrixMasterTest(passes, fails) &&
+                     column_test::ColumnMasterTest(passes, fails)};
 
 #ifdef BENCHMARK
     std::cout << "Benchmarking matrix operations..." << std::endl;
