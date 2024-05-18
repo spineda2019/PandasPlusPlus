@@ -11,16 +11,7 @@
 #include "ppp/Matrix.hpp"
 
 namespace matrix_test {
-bool MatrixMasterTest(const std::unique_ptr<std::size_t>& passes,
-                      const std::unique_ptr<std::size_t>& fails) {
-    return TestEquality(passes, fails) && TestHeadlessPrint(passes, fails) &&
-           TestEmptyPrint(passes, fails) && TestComplexPrint(passes, fails) &&
-           TestInsertingHeaders(passes, fails) &&
-           TestBadShapeCatching(passes, fails) && TestAddition(passes, fails) &&
-           TestSubtraction(passes, fails) &&
-           TestNonMatrixSubtraction(passes, fails);
-}
-
+namespace {
 bool TestEquality(const std::unique_ptr<std::size_t>& passes,
                   const std::unique_ptr<std::size_t>& fails) {
     std::optional<ppp::Matrix<int>> empty_left{ppp::Matrix<int>::New()};
@@ -274,4 +265,16 @@ bool TestNonMatrixSubtraction(const std::unique_ptr<std::size_t>& passes,
         return false;
     }
 }
+}  // namespace
+
+bool MatrixMasterTest(const std::unique_ptr<std::size_t>& passes,
+                      const std::unique_ptr<std::size_t>& fails) {
+    return TestEquality(passes, fails) && TestHeadlessPrint(passes, fails) &&
+           TestEmptyPrint(passes, fails) && TestComplexPrint(passes, fails) &&
+           TestInsertingHeaders(passes, fails) &&
+           TestBadShapeCatching(passes, fails) && TestAddition(passes, fails) &&
+           TestSubtraction(passes, fails) &&
+           TestNonMatrixSubtraction(passes, fails);
+}
+
 }  // namespace matrix_test
