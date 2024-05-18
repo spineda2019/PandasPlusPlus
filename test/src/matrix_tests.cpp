@@ -1,38 +1,38 @@
-#include <chrono>
+#include "include/matrix_tests.hpp"
+
 #include <complex>
 #include <cstddef>
-#include <cstdint>
-#include <functional>
 #include <iostream>
+#include <memory>
+#include <optional>
 #include <ostream>
-#include <ppp/CsvFile.hpp>
-#include <ppp/Matrix.hpp>
-#include <span>
 #include <string_view>
-#include <vector>
 
-std::size_t passes{0};
-std::size_t fails{0};
+#include "ppp/Matrix.hpp"
 
-auto time_operation = [](const std::function<void()>& operation) {
-    auto start = std::chrono::high_resolution_clock::now();
-    operation();
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = duration_cast<std::chrono::microseconds>(stop - start);
-    return duration.count();
-};
+namespace matrix_test {
+bool MatrixMasterTest(const std::unique_ptr<std::size_t>& passes,
+                      const std::unique_ptr<std::size_t>& fails) {
+    return TestEquality(passes, fails) && TestHeadlessPrint(passes, fails) &&
+           TestEmptyPrint(passes, fails) && TestComplexPrint(passes, fails) &&
+           TestInsertingHeaders(passes, fails) &&
+           TestBadShapeCatching(passes, fails) && TestAddition(passes, fails) &&
+           TestSubtraction(passes, fails) &&
+           TestNonMatrixSubtraction(passes, fails);
+}
 
-bool TestEquality() {
+bool TestEquality(const std::unique_ptr<std::size_t>& passes,
+                  const std::unique_ptr<std::size_t>& fails) {
     std::optional<ppp::Matrix<int>> empty_left{ppp::Matrix<int>::New()};
     std::optional<ppp::Matrix<int>> empty_right{ppp::Matrix<int>::New()};
 
     if ((!empty_left.has_value()) || (!empty_right.has_value())) {
         std::cout << "Test: TestEquality Failed..." << std::endl << std::endl;
-        fails++;
+        (*fails)++;
         return false;
     } else if (empty_left.value() != empty_right.value()) {
         std::cout << "Test: TestEquality Failed..." << std::endl << std::endl;
-        fails++;
+        (*fails)++;
         return false;
     } else {
         std::vector<std::vector<std::uint16_t>> some{{
@@ -48,7 +48,7 @@ bool TestEquality() {
         if ((!left.has_value()) || (!right.has_value())) {
             std::cout << "Test: TestEquality Failed..." << std::endl
                       << std::endl;
-            fails++;
+            (*fails)++;
             return false;
         } else {
             bool result = left.value() == right.value();
@@ -57,7 +57,7 @@ bool TestEquality() {
                           << "Matrix Used: " << std::endl
                           << std::endl;
                 std::cout << left.value() << std::endl;
-                passes++;
+                (*passes)++;
                 return true;
             } else {
                 return false;
@@ -66,7 +66,8 @@ bool TestEquality() {
     }
 }
 
-bool TestHeadlessPrint() {
+bool TestHeadlessPrint(const std::unique_ptr<std::size_t>& passes,
+                       const std::unique_ptr<std::size_t>& fails) {
     std::vector<std::vector<float>> data{
         {3.0, 4.0},
         {3.0, 4.0},
@@ -79,17 +80,18 @@ bool TestHeadlessPrint() {
                   << "Matrix Used: " << std::endl
                   << std::endl;
         std::cout << lvalue.value() << std::endl;
-        passes++;
+        (*passes)++;
         return true;
     } else {
         std::cout << "Test: TestHeadlessPrint Failed..." << std::endl
                   << std::endl;
-        fails++;
+        (*fails)++;
         return false;
     }
 }
 
-bool TestEmptyPrint() {
+bool TestEmptyPrint(const std::unique_ptr<std::size_t>& passes,
+                    const std::unique_ptr<std::size_t>& fails) {
     std::optional<ppp::Matrix<float>> empty{ppp::Matrix<float>::New()};
 
     if (empty.has_value()) {
@@ -97,16 +99,17 @@ bool TestEmptyPrint() {
                   << "Matrix Used: " << std::endl
                   << std::endl;
         std::cout << empty.value() << std::endl;
-        passes++;
+        (*passes)++;
         return true;
     } else {
         std::cout << "Test: TestEmptyPrint Failed..." << std::endl << std::endl;
-        fails++;
+        (*fails)++;
         return false;
     }
 }
 
-bool TestComplexPrint() {
+bool TestComplexPrint(const std::unique_ptr<std::size_t>& passes,
+                      const std::unique_ptr<std::size_t>& fails) {
     std::vector<std::vector<std::complex<float>>> complex{{
         {std::complex<float>(3.0, 3.0), std::complex<float>(4.0, 4.0)},
         {std::complex<float>(5.0, 5.0), std::complex<float>(6.0, 6.0)},
@@ -120,17 +123,18 @@ bool TestComplexPrint() {
                   << "Matrix Used: " << std::endl
                   << std::endl;
         std::cout << cmp.value() << std::endl;
-        passes++;
+        (*passes)++;
         return true;
     } else {
         std::cout << "Test: TestComplexPrint Failed..." << std::endl
                   << std::endl;
-        fails++;
+        (*fails)++;
         return false;
     }
 }
 
-bool TestInsertingHeaders() {
+bool TestInsertingHeaders(const std::unique_ptr<std::size_t>& passes,
+                          const std::unique_ptr<std::size_t>& fails) {
     std::vector<std::vector<float>> data{
         {3.0, 4.0},
         {3.0, 4.0},
@@ -140,7 +144,7 @@ bool TestInsertingHeaders() {
     if (!lvalue.has_value()) {
         std::cout << "Test: TestInsertingHeaders Failed..." << std::endl
                   << std::endl;
-        fails++;
+        (*fails)++;
         return false;
     }
 
@@ -152,17 +156,18 @@ bool TestInsertingHeaders() {
                   << "Matrix Used: " << std::endl
                   << std::endl;
         std::cout << lvalue.value() << std::endl;
-        passes++;
+        (*passes)++;
         return true;
     } else {
         std::cout << "Test: TestInsertingHeaders Failed..." << std::endl
                   << std::endl;
-        fails++;
+        (*fails)++;
         return false;
     }
 }
 
-bool TestBadShapeCatching() {
+bool TestBadShapeCatching(const std::unique_ptr<std::size_t>& passes,
+                          const std::unique_ptr<std::size_t>& fails) {
     std::vector<std::vector<float>> data{
         {3.0, 4.0},
         {3.0},
@@ -172,17 +177,18 @@ bool TestBadShapeCatching() {
     if (lvalue.has_value()) {
         std::cout << "Test: TestInsertingHeaders Failed..." << std::endl
                   << std::endl;
-        fails++;
+        (*fails)++;
         return false;
     } else {
         std::cout << "Test: TestBadShapeCatching Passed!" << std::endl
                   << std::endl;
-        passes++;
+        (*passes)++;
         return true;
     }
 }
 
-bool TestAddition() {
+bool TestAddition(const std::unique_ptr<std::size_t>& passes,
+                  const std::unique_ptr<std::size_t>& fails) {
     std::vector<std::vector<float>> data{
         {3.0, 4.0},
         {3.0, 4.0},
@@ -192,23 +198,24 @@ bool TestAddition() {
     std::optional<ppp::Matrix<float>> rhs{ppp::Matrix<float>::New(data)};
     if (!lhs.has_value() || !rhs.has_value()) {
         std::cout << "Test: TestAddition Failed..." << std::endl << std::endl;
-        fails++;
+        (*fails)++;
         return false;
     } else {
         auto sum = lhs.value() + rhs.value();
         if (sum.has_value()) {
             std::cout << "Test: TestAddition Passed!" << std::endl << std::endl;
             std::cout << sum.value() << std::endl;
-            passes++;
+            (*passes)++;
             return true;
         } else {
-            fails++;
+            (*fails)++;
             return false;
         }
     }
 }
 
-bool TestSubtraction() {
+bool TestSubtraction(const std::unique_ptr<std::size_t>& passes,
+                     const std::unique_ptr<std::size_t>& fails) {
     std::vector<std::vector<float>> data{
         {3.0, 4.0},
         {3.0, 4.0},
@@ -219,7 +226,7 @@ bool TestSubtraction() {
     if (!lhs.has_value() || !rhs.has_value()) {
         std::cout << "Test: TestSubtraction Failed..." << std::endl
                   << std::endl;
-        fails++;
+        (*fails)++;
         return false;
     } else {
         auto sum = lhs.value() - rhs.value();
@@ -227,16 +234,17 @@ bool TestSubtraction() {
             std::cout << "Test: TestSubtraction Passed!" << std::endl
                       << std::endl;
             std::cout << sum.value() << std::endl;
-            passes++;
+            (*passes)++;
             return true;
         } else {
-            fails++;
+            (*fails)++;
             return false;
         }
     }
 }
 
-bool TestNonMatrixSubtraction() {
+bool TestNonMatrixSubtraction(const std::unique_ptr<std::size_t>& passes,
+                              const std::unique_ptr<std::size_t>& fails) {
     std::vector<std::vector<double>> data{
         {3.0, 4.0},
         {3.0, 4.0},
@@ -248,101 +256,22 @@ bool TestNonMatrixSubtraction() {
     if (lhs.has_value()) {
         const std::optional<ppp::Matrix<double>> diff{lhs.value() - 4.0};
         if (diff.has_value()) {
-            passes++;
+            (*passes)++;
             std::cout << "Test: TestNonMatrixSubtraction Passed!" << std::endl
                       << std::endl;
             std::cout << diff.value() << std::endl;
             return true;
         } else {
-            fails++;
+            (*fails)++;
             std::cout << "Test: TestNonMatrixSubtraction Failed..." << std::endl
                       << std::endl;
             return false;
         }
     } else {
-        fails++;
+        (*fails)++;
         std::cout << "Test: TestNonMatrixSubtraction Failed..." << std::endl
                   << std::endl;
         return false;
     }
 }
-
-bool TestCsvConstruction() {
-    const char* bar = "";
-    (void)ppp::CsvFile::New("");
-    return true;
-}
-
-void BenchMarkOperations() {
-    std::vector<std::vector<float>> data{
-        {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 0.0f},
-        {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 0.0f},
-        {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 0.0f},
-        {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 0.0f},
-        {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 0.0f},
-        {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 0.0f},
-        {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 0.0f},
-        {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 0.0f},
-        {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 0.0f},
-        {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 0.0f},
-    };
-
-    std::optional<ppp::Matrix<float>> lhs{ppp::Matrix<float>::New(data)};
-    std::optional<ppp::Matrix<float>> rhs{ppp::Matrix<float>::New(data)};
-
-    if (lhs.has_value() && rhs.has_value()) {
-        std::cout << "Benchmarking addition..." << std::endl;
-        constexpr std::uint64_t test_iters{1'000'000};
-        std::uint64_t time =
-            time_operation([&lhs, &rhs]() {
-                for (std::size_t test{0}; test < test_iters; test++) {
-                    lhs.value() + rhs.value();
-                }
-            }) /
-            test_iters;
-        std::cout << "Average 10x10 addition: " << time << "us" << std::endl;
-
-        std::cout << "Benchmarking subtraction..." << std::endl;
-        time = time_operation([&lhs, &rhs]() {
-                   for (std::size_t test{0}; test < test_iters; test++) {
-                       lhs.value() - rhs.value();
-                   }
-               }) /
-               test_iters;
-        std::cout << "Average 10x10 subtraction: " << time << "us" << std::endl;
-    } else {
-        std::cout << "Benchmarking skipped, unexpected result encountered.."
-                  << std::endl;
-    }
-}
-
-int main(void) {
-    bool test_result{TestEquality() && TestHeadlessPrint() &&
-                     TestEmptyPrint() && TestComplexPrint() &&
-                     TestInsertingHeaders() && TestBadShapeCatching() &&
-                     TestAddition() && TestSubtraction() &&
-                     TestNonMatrixSubtraction() && TestCsvConstruction()};
-
-    std::cout << "Benchmarking matrix operations..." << std::endl;
-    BenchMarkOperations();
-
-    std::cout << std::endl
-              << "--------------------------------- Test Summary "
-                 "---------------------------------"
-              << std::endl
-              << std::endl
-              << "Tests Passed: " << passes << std::endl
-              << "Tests Failed: " << fails << std::endl
-              << std::endl
-              << "------------------------------------ Result "
-                 "------------------------------------"
-              << std::endl
-              << std::endl;
-    if (test_result) {
-        std::cout << "                               " << "All tests passed!!"
-                  << "                               " << std::endl;
-    } else {
-        std::cout << "                              " << "Some tests failed..."
-                  << "                              " << std::endl;
-    }
-}
+}  // namespace matrix_test

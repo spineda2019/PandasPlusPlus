@@ -7,8 +7,12 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(TEST_SOURCES
-    "main.cpp")
+    "src/main.cpp"
+    "src/benchmark.cpp"
+    "src/column_tests.cpp"
+    "src/matrix_tests.cpp")
 
 add_executable(test ${TEST_SOURCES})
 
+target_include_directories(test PRIVATE src/include)
 target_link_libraries(test PRIVATE libppp)
