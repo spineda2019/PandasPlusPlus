@@ -21,13 +21,23 @@
 #ifndef PPP_PPP_COLUMN_HPP_
 #define PPP_PPP_COLUMN_HPP_
 
+#include <algorithm>
+#include <cstdint>
+#include <execution>
+#include <expected>
+#include <functional>
 #include <iostream>
 #include <ostream>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace ppp {
+
+enum class ErrorCode : std::uint8_t {
+    MismatchedColumnSize,
+};
 
 template <class T>
 concept BasicEntry = requires(T first, T second) {
@@ -47,6 +57,10 @@ class Column {
     friend inline std::ostream &operator<<(std::ostream &stream,
                                            const Column<V> &column);
 
+    template <BasicEntry V>
+    friend inline std::expected<Column<V>, ErrorCode> operator+(
+        const Column<V> &lhs, const Column<V> &rhs);
+
  private:
     std::vector<T> data_;
     std::string key_;
@@ -60,6 +74,21 @@ inline std::ostream &operator<<(std::ostream &stream, const Column<V> &column) {
     }
     stream << std::endl;
     return stream;
+}
+
+template <BasicEntry V>
+inline std::expected<Column<V>, ErrorCode> operator+(const Column<V> &lhs,
+                                                     const Column<V> &rhs) {
+    if (lhs.data_.size() != rhs.data_.size()) {
+        return std::unexpected{ErrorCode::MismatchedColumnSize};
+    } else {
+        std::vector<V> sum(lhs.data_.size());
+        std::transform(std::execution::par_unseq, lhs.data_.cbegin(),
+                       lhs.data_.cend(), rhs.data_.cbegin(), sum.begin(),
+                       std::plus<V>());
+
+        return Column{std::move(sum), lhs.key_ + " + " + rhs.key_};
+    }
 }
 
 }  // namespace ppp
