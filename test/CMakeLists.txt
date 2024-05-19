@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.19)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-project(test DESCRIPTION "Test Suite for PandasPlusPlus" LANGUAGES CXX)
+project(ppp-test DESCRIPTION "Test Suite for PandasPlusPlus" LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 
 set(TEST_SOURCES
     "src/main.cpp"
@@ -12,12 +13,15 @@ set(TEST_SOURCES
     "src/column_tests.cpp"
     "src/matrix_tests.cpp")
 
-add_executable(test ${TEST_SOURCES})
+add_executable(ppp-test ${TEST_SOURCES})
 
 if(BENCHMARK)
     message(">> PandasPlusPlus: Configuring with Benchmarking")
-    target_compile_definitions(test PRIVATE BENCHMARK)
+    target_compile_definitions(ppp-test PRIVATE BENCHMARK)
 endif()
 
-target_include_directories(test PRIVATE src/include)
-target_link_libraries(test PRIVATE libppp)
+target_include_directories(ppp-test PRIVATE src/include)
+target_link_libraries(ppp-test PRIVATE libppp)
+
+
+add_test(NAME MainTest COMMAND $<TARGET_FILE:ppp-test>)

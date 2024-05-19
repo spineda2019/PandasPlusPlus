@@ -1,0 +1,61 @@
+{
+    "version": 2,
+
+    "configurePresets": [
+        {
+            "name": "release-all",
+            "generator": "Ninja",
+            "displayName": "Release Build All Targets",
+            "description": "Build All Targets in this project: ppp itself,
+            the dotnet lib if possible, the c-exports, and the python module",
+            "binaryDir": "${sourceDir}/build/release",
+            "cacheVariables": {
+                "BUILD_ALL": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
+                "BENCHMARK": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                }
+            }
+        },
+
+        {
+            "name": "test",
+            "generator": "Ninja",
+            "displayName": "Debug Build Test Suite",
+            "binaryDir": "${sourceDir}/build/test-suite",
+            "cacheVariables": {
+                "BUILD_TESTS": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
+                "BENCHMARK": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                }
+            }
+        }
+
+    ],
+
+    "buildPresets": [
+        {
+            "name": "build-release-all",
+            "configurePreset": "release-all"
+        },
+
+        {
+            "name": "build-tests",
+            "configurePreset": "test"
+        }
+    ],
+
+    "testPresets": [
+        {
+            "name": "test-ppp",
+            "configurePreset": "test"
+        }
+    ]
+}

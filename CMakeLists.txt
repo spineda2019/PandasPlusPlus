@@ -27,5 +27,6 @@ endif()
 
 if(BUILD_ALL OR BUILD_TESTS)
     message(">> PandasPlusPlus: Configuring Test Executable")
+    enable_testing()
     add_subdirectory(test)
 endif()
