@@ -21,9 +21,12 @@
 #ifndef PPP_PPP_COLUMN_HPP_
 #define PPP_PPP_COLUMN_HPP_
 
+#include <iostream>
+#include <ostream>
 #include <string>
 #include <string_view>
 #include <vector>
+
 namespace ppp {
 
 template <class T>
@@ -31,18 +34,33 @@ concept BasicEntry = requires(T first, T second) {
     first + second;
     first - second;
     first / second;
+    std::cout << first;
 };
 
 template <BasicEntry T>
 class Column {
  public:
-    Column(const std::vector<T>& data, std::string_view key)
+    Column(const std::vector<T> &data, std::string_view key)
         : data_{data}, key_{key} {}
+
+    template <BasicEntry V>
+    friend inline std::ostream &operator<<(std::ostream &stream,
+                                           const Column<V> &column);
 
  private:
     std::vector<T> data_;
     std::string key_;
 };
+
+template <BasicEntry V>
+inline std::ostream &operator<<(std::ostream &stream, const Column<V> &column) {
+    stream << "\"" << column.key_ << "\"" << " | ";
+    for (const V &entry : column.data_) {
+        stream << entry << " | ";
+    }
+    stream << std::endl;
+    return stream;
+}
 
 }  // namespace ppp
 
