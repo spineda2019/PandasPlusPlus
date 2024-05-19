@@ -14,5 +14,10 @@ set(TEST_SOURCES
 
 add_executable(test ${TEST_SOURCES})
 
+if(BENCHMARK)
+    message(">> PandasPlusPlus: Configuring with Benchmarking")
+    target_compile_definitions(test PRIVATE BENCHMARK)
+endif()
+
 target_include_directories(test PRIVATE src/include)
 target_link_libraries(test PRIVATE libppp)
