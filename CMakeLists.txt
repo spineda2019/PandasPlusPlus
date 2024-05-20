@@ -1,11 +1,7 @@
 cmake_minimum_required(VERSION 3.19)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-project(PandasPlusPlus CXX)
-
-# specify the C++ standard
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+project(PandasPlusPlus DESCRIPTION "Fast Pandas Alt written in C++ for various target langs")
 
 add_subdirectory(ppp)
 

@@ -3,10 +3,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(ppp-test DESCRIPTION "Test Suite for PandasPlusPlus" LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-
 set(TEST_SOURCES
     "src/main.cpp"
     "src/benchmark.cpp"
@@ -14,6 +10,8 @@ set(TEST_SOURCES
     "src/matrix_tests.cpp")
 
 add_executable(ppp-test ${TEST_SOURCES})
+
+target_compile_features(ppp-test PUBLIC cxx_std_23)
 
 if(BENCHMARK)
     message(">> PandasPlusPlus: Configuring with Benchmarking")
