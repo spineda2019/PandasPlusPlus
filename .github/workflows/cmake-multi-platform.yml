@@ -48,9 +48,7 @@ jobs:
             c_compiler: cl
           - preset: release-all-no-clr
             build-preset: build-tests
-            test-preset: test-ppp
           - preset: release-all-no-clr
-            build-preset: build-release-all-no-clr
             test-preset: test-ppp
           - preset: test
             build-preset: build-release-all-no-clr
