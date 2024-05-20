@@ -49,6 +49,9 @@ jobs:
           - preset: release-all-no-clr
             build-preset: build-tests
             test-preset: test-ppp
+          - preset: release-all-no-clr
+            build-preset: build-release-all-no-clr
+            test-preset: test-ppp
 
     steps:
     - uses: actions/checkout@v4
