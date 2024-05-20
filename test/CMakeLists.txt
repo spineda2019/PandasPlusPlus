@@ -21,5 +21,12 @@ endif()
 target_include_directories(ppp-test PRIVATE src/include)
 target_link_libraries(ppp-test PRIVATE libppp)
 
+add_test(NAME CppTest COMMAND $<TARGET_FILE:ppp-test>)
 
-add_test(NAME MainTest COMMAND $<TARGET_FILE:ppp-test>)
+set(CTEST_SOURCES
+    "c_src/main.c")
+
+add_executable(ppp-ctest ${CTEST_SOURCES})
+target_compile_features(ppp-ctest PUBLIC c_std_17)
+target_include_directories(ppp-ctest PRIVATE c_src/include)
+add_test(NAME CTest COMMAND $<TARGET_FILE:ppp-ctest>)
