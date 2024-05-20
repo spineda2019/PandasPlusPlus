@@ -15,7 +15,7 @@ void delete_Dataframe_float(Dataframe *frame) {
     delete reinterpret_cast<ppp::Dataframe<float> *>(frame);
 }
 
-FMatrix_t *FMatrix(const float **data, const char **headers) {}
+FMatrix_t *FMatrix(const float **data, const char **headers) { return nullptr; }
 
 void print_Dataframe_tail_float(Dataframe *frame, uint64_t n_rows) {
     reinterpret_cast<ppp::Dataframe<float> *>(frame)->PrintTail(n_rows);
