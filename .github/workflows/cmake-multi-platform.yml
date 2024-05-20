@@ -39,6 +39,8 @@ jobs:
           - os: ubuntu-latest
             c_compiler: clang
             cpp_compiler: clang++
+          - preset: release-all-no-clr
+            build-preset: build-release-all-no-clr
         exclude:
           - os: windows-latest
             c_compiler: gcc
