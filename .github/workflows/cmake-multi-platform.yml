@@ -46,6 +46,9 @@ jobs:
             c_compiler: clang
           - os: ubuntu-latest
             c_compiler: cl
+          - preset: release-all-no-clr
+            build-preset: build-tests
+            test-preset: test-ppp
 
     steps:
     - uses: actions/checkout@v4
