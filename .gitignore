@@ -3,6 +3,7 @@ x64/
 build/
 debug-build/
 winbuild/
+Testing/
 
 TODO.txt
 dllmain.cpp

@@ -1,7 +1,4 @@
-project(pyppp DESCRIPTION "(Yet another) Matrix math module for python")
-
-set(CMAKE_C_STANDARD 17)
-set(CMAKE_C_STANDARD_REQUIRED ON)
+project(pyppp DESCRIPTION "(Yet another) Matrix math module for python" LANGUAGES C)
 
 find_package(Python3 COMPONENTS Development Interpreter)
 
@@ -16,6 +13,8 @@ set(PY_SOURCES
     "src/pppmodule.c")
 
 add_library(pyppp SHARED ${PY_SOURCES})
+
+target_compile_features(pyppp PUBLIC c_std_17)
 
 target_include_directories(pyppp PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/include" ${Python3_INCLUDE_DIRS})
 

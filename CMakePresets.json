@@ -1,0 +1,193 @@
+{
+    "version": 2,
+
+    "configurePresets": [
+        {
+            "name": "release-base",
+            "generator": "Ninja",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/build/release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STRING",
+                    "value": "Release"
+                }
+            }
+        },
+
+        {
+            "name": "release-clr-base",
+            "generator": "Visual Studio 17 2022",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/build/release-clr",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STRING",
+                    "value": "Release"
+                }
+            }
+        },
+
+        {
+            "name": "debug-base",
+            "generator": "Ninja",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/build/debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STRING",
+                    "value": "Debug"
+                }
+            }
+        },
+
+        {
+            "name": "debug-clr-base",
+            "generator": "Visual Studio 17 2022",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/build/debug-clr",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STRING",
+                    "value": "Debug"
+                }
+            }
+        },
+
+        {
+            "name": "test-base",
+            "generator": "Ninja",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/build/test-suite",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STRING",
+                    "value": "Debug"
+                }
+            }
+        },
+
+        {
+            "name": "release-all-no-clr",
+            "inherits": "release-base",
+            "displayName": "Release Build All Targets Without CLR Lib",
+            "cacheVariables": {
+                "BUILD_ALL": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
+                "BENCHMARK": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                }
+            }
+        },
+
+        {
+            "name": "release-all",
+            "inherits": "release-clr-base",
+            "displayName": "Release Build All Targets",
+            "cacheVariables": {
+                "BUILD_ALL": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
+                "BENCHMARK": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                },
+                "VS_GEN": {
+                    "type": "BOOL",
+                    "value": "ON"
+                }
+            }
+        },
+
+        {
+            "name": "debug-all-no-clr",
+            "inherits": "debug-base",
+            "displayName": "Debug Build All Targets Without CLR Lib",
+            "cacheVariables": {
+                "BUILD_ALL": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
+                "BENCHMARK": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                }
+            }
+        },
+
+        {
+            "name": "debug-all",
+            "inherits": "debug-clr-base",
+            "displayName": "Debug Build All Targets",
+            "cacheVariables": {
+                "BUILD_ALL": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
+                "BENCHMARK": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                },
+                "VS_GEN": {
+                    "type": "BOOL",
+                    "value": "ON"
+                }
+            }
+        },
+
+        {
+            "name": "test",
+            "inherits": "test-base",
+            "displayName": "Debug Build Test Suite",
+            "cacheVariables": {
+                "BUILD_TESTS": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
+                "BENCHMARK": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                }
+            }
+        }
+
+    ],
+
+    "buildPresets": [
+        {
+            "name": "build-release-all-no-clr",
+            "configurePreset": "release-all-no-clr"
+        },
+
+        {
+            "name": "build-release-all",
+            "configurePreset": "release-all"
+        },
+
+        {
+            "name": "build-debug-all-no-clr",
+            "configurePreset": "debug-all-no-clr"
+        },
+
+        {
+            "name": "build-debug-all",
+            "configurePreset": "debug-all"
+        },
+
+        {
+            "name": "build-tests",
+            "configurePreset": "test"
+        }
+    ],
+
+    "testPresets": [
+        {
+            "name": "test-ppp",
+            "configurePreset": "test"
+        }
+    ]
+}
