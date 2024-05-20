@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 add_subdirectory(ppp)
 
-if(WIN32 AND MSVC AND (BUILD_ALL OR BUILD_DOTNET))
+if(WIN32 AND MSVC AND (BUILD_ALL OR BUILD_DOTNET) AND VS_GEN)
     message(">> PandasPlusPlus: Configuring Dotnet CLR Library")
     add_subdirectory(dotnet)
 else()
