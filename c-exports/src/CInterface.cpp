@@ -1,15 +1,24 @@
-#include "CInterface.h"
+#include "include/CInterface.h"
 
 #include <stdint.h>
 
 #include <iostream>
+#include <ppp/Column.hpp>
 #include <ppp/Dataframe.hpp>
+#include <vector>
 
 // Dataframe *create_dataframe_float(const char *file_path, bool
 // file_has_header) {
 //     return reinterpret_cast<Dataframe *>(
 //         new ppp::Dataframe<float>(file_path, file_has_header));
 // }
+
+C_API void NewFColumn(FColumnHandle handle, const float *data, size_t length,
+                      const char *key) {
+    ppp::Column<float> *col{new ppp::Column{
+        std::vector<float>{data, data + (length * sizeof(float))}, key}};
+    handle = col;
+}
 
 void delete_Dataframe_float(Dataframe *frame) {
     delete reinterpret_cast<ppp::Dataframe<float> *>(frame);

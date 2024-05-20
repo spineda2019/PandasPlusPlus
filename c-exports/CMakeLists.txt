@@ -12,4 +12,4 @@ target_compile_features(libcexports PUBLIC cxx_std_23)
 target_compile_definitions(libcexports PRIVATE C_EXPORTS)
 
 target_link_libraries(libcexports PRIVATE libppp)
-target_include_directories(libcexports PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/include")
+target_include_directories(libcexports PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/include")

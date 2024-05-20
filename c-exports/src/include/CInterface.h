@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include <cstddef>
+
 #if defined _WIN32 || defined __CYGWIN__              // *
 #ifdef __GNUC__                                       // **
 #ifdef C_EXPORTS                                      // ***
@@ -28,6 +30,16 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef struct FColumn {
+    float *data_;
+    const char *key_;
+} FColumn_t;
+
+typedef void *FColumnHandle;
+
+C_API void NewFColumn(FColumnHandle handle, const float *data, size_t length,
+                      const char *key);
 
 typedef struct FMatrix_t {
     float **data_;
