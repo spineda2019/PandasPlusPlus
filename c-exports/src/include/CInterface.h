@@ -37,36 +37,10 @@ typedef struct FColumn {
 
 typedef void *FColumnHandle;
 
-C_API void NewFColumn(FColumnHandle handle, const float *data, size_t length,
-                      const char *key);
+C_API FColumnHandle NewFColumn(const float *data, size_t length,
+                               const char *key);
 
-typedef struct FMatrix_t {
-    float **data_;
-    char **headers_;
-} FMatrix_t;
-
-C_API FMatrix_t *FMatrix(const float **data, const char **headers);
-
-typedef struct Dataframe_t {
-    unsigned long long height_;
-    unsigned long long width_;
-    unsigned char has_header_row_;  // not bool to keep C/C++ compatibility
-    float **data_;                  // 2d array of Floats
-    char **headers_;                // array of strings
-    unsigned long long max_column_width_;
-} Dataframe;
-// Float methods
-
-C_API Dataframe *create_dataframe_float(const char *file_path,
-                                        unsigned char file_has_header);
-
-inline C_API void delete_Dataframe_float(Dataframe *frame);
-
-inline C_API void print_Dataframe_tail_float(Dataframe *frame, uint64_t n_rows);
-
-inline C_API void print_Dataframe_head_float(Dataframe *frame, uint64_t n_rows);
-
-inline C_API float col_name_mean_float(Dataframe *frame, const char *col_name);
+C_API void PrintFColumn(FColumnHandle column);
 
 #ifdef __cplusplus
 }

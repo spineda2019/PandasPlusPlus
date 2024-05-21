@@ -2,10 +2,10 @@
 
 #include <stdint.h>
 
+#include <cstdlib>
 #include <iostream>
 #include <ppp/Column.hpp>
 #include <ppp/Dataframe.hpp>
-#include <vector>
 
 // Dataframe *create_dataframe_float(const char *file_path, bool
 // file_has_header) {
@@ -13,32 +13,19 @@
 //         new ppp::Dataframe<float>(file_path, file_has_header));
 // }
 
-C_API void NewFColumn(FColumnHandle handle, const float *data, size_t length,
-                      const char *key) {
-    ppp::Column<float> *col{new ppp::Column{
-        std::vector<float>{data, data + (length * sizeof(float))}, key}};
-    handle = col;
+C_API FColumnHandle NewFColumn(const float *data, size_t length,
+                               const char *key) {
+    ppp::Column<float> *col{
+        new ppp::Column{std::vector<float>{data, data + length}, key}};
+
+    return col;
 }
 
-void delete_Dataframe_float(Dataframe *frame) {
-    delete reinterpret_cast<ppp::Dataframe<float> *>(frame);
-}
-
-FMatrix_t *FMatrix(const float **data, const char **headers) { return nullptr; }
-
-void print_Dataframe_tail_float(Dataframe *frame, uint64_t n_rows) {
-    reinterpret_cast<ppp::Dataframe<float> *>(frame)->PrintTail(n_rows);
-}
-
-void print_Dataframe_head_float(Dataframe *frame, uint64_t n_rows) {
-    reinterpret_cast<ppp::Dataframe<float> *>(frame)->PrintData(n_rows);
-}
-
-float col_name_mean_float(Dataframe *frame, const char *col_name) {
-    try {
-        return reinterpret_cast<ppp::Dataframe<float> *>(frame)->Mean(col_name);
-    } catch (ColumnNotFoundException &e) {
-        std::cout << e.what() << std::endl;
-        return 0.0f;
+C_API void PrintFColumn(FColumnHandle column) {
+    if (column) {
+        std::cout << *(reinterpret_cast<ppp::Column<float> *>(column))
+                  << std::endl;
+    } else {
+        std::cout << "Bad Column Handle..." << std::endl;
     }
 }
