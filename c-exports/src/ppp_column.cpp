@@ -103,17 +103,18 @@ C_API LColumnHandle AddLColumns(const LColumnHandle lhs,
         delete reinterpret_cast<ppp::Column<type> *>(column); \
     }
 
-C_API void DeleteFColumn(const FColumnHandle column) {
+C_API void DeleteFColumn(FColumnHandle column) {
     DeleteColumnImplementation(float);
 }
 
-C_API void DeleteDColumn(const DColumnHandle column) {
+C_API void DeleteDColumn(DColumnHandle column) {
     DeleteColumnImplementation(double);
 }
-C_API void DeleteIColumn(const IColumnHandle column) {
+
+C_API void DeleteIColumn(IColumnHandle column) {
     DeleteColumnImplementation(int);
 }
 
-C_API void DeleteLColumn(const LColumnHandle column) {
+C_API void DeleteLColumn(LColumnHandle column) {
     DeleteColumnImplementation(long);
 }

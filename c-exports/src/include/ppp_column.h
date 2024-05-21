@@ -54,13 +54,13 @@ C_API LColumnHandle AddLColumns(const LColumnHandle lhs,
 
 /* ***************************** Delete Column ****************************** */
 
-C_API void DeleteFColumn(const FColumnHandle column);
+C_API void DeleteFColumn(FColumnHandle column);
 
-C_API void DeleteDColumn(const DColumnHandle column);
+C_API void DeleteDColumn(DColumnHandle column);
 
-C_API void DeleteIColumn(const IColumnHandle column);
+C_API void DeleteIColumn(IColumnHandle column);
 
-C_API void DeleteLColumn(const LColumnHandle column);
+C_API void DeleteLColumn(LColumnHandle column);
 
 #ifdef __cplusplus
 }
