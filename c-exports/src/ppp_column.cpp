@@ -47,19 +47,19 @@ C_API LColumnHandle NewLColumn(const long *data, size_t length,
         std::cout << "Bad Column Handle..." << std::endl;             \
     }
 
-C_API void PrintFColumn(FColumnHandle column) {
+C_API void PrintFColumn(const FColumnHandle column) {
     PrintColumnImplementation(float);
 }
 
-C_API void PrintDColumn(DColumnHandle column) {
+C_API void PrintDColumn(const DColumnHandle column) {
     PrintColumnImplementation(double);
 }
 
-C_API void PrintIColumn(IColumnHandle column) {
+C_API void PrintIColumn(const IColumnHandle column) {
     PrintColumnImplementation(int);
 }
 
-C_API void PrintLColumn(LColumnHandle column) {
+C_API void PrintLColumn(const LColumnHandle column) {
     PrintColumnImplementation(long);
 }
 

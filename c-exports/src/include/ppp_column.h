@@ -30,13 +30,13 @@ C_API LColumnHandle NewLColumn(const long *data, size_t length,
 
 /* ****************************** Print Column ****************************** */
 
-C_API void PrintFColumn(FColumnHandle column);
+C_API void PrintFColumn(const FColumnHandle column);
 
-C_API void PrintDColumn(DColumnHandle column);
+C_API void PrintDColumn(const DColumnHandle column);
 
-C_API void PrintIColumn(IColumnHandle column);
+C_API void PrintIColumn(const IColumnHandle column);
 
-C_API void PrintLColumn(LColumnHandle column);
+C_API void PrintLColumn(const LColumnHandle column);
 
 /* ******************************* Add Column ******************************* */
 
