@@ -10,7 +10,14 @@
 extern "C" {
 #endif
 
+#define NewColumnDeclaration(type)                                        \
+    C_API FColumnHandle NewColumn_##type(const type *data, size_t length, \
+                                         const char *key)
+
 typedef void *FColumnHandle;
+
+NewColumnDeclaration(int);
+NewColumnDeclaration(double);
 
 C_API FColumnHandle NewFColumn(const float *data, size_t length,
                                const char *key);

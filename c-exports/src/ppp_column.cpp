@@ -9,6 +9,17 @@
 
 #define EXTRACT_OBJECT(obj, type) *(reinterpret_cast<ppp::Column<type> *>(obj))
 
+#define NewColumnDefinition(type)                                          \
+    NewColumnDeclaration(type) {                                           \
+        ppp::Column<type> *col{                                            \
+            new ppp::Column{std::vector<type>{data, data + length}, key}}; \
+                                                                           \
+        return col;                                                        \
+    }
+
+NewColumnDefinition(int);
+NewColumnDefinition(double);
+
 C_API FColumnHandle NewFColumn(const float *data, size_t length,
                                const char *key) {
     ppp::Column<float> *col{
