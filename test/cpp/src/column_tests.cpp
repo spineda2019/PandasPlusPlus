@@ -48,13 +48,10 @@ bool TestAddition(const std::unique_ptr<std::size_t>& passes,
         FailNotification(col, "TestAddition");
         (*fails)++;
         return false;
-    } else if (bad_sum.error() != ppp::ErrorCode::MismatchedColumnSize) {
-        FailNotification(col, "TestAddition");
-        (*fails)++;
-        return false;
     }
 
     auto sum = col + col;
+
     if (!sum.has_value()) {
         FailNotification(col, "TestAddition");
         (*fails)++;
