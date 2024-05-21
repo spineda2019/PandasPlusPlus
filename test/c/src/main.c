@@ -13,8 +13,5 @@ int main(int argc, char** argv) {
 
     PrintFColumn(col3);
 
-    int ints[3] = {3, 2, 7};
-    NewColumn_int(ints, 3, key);
-
     return 0;
 }
