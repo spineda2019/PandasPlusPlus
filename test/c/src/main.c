@@ -11,5 +11,7 @@ int main(int argc, char** argv) {
 
     FColumnHandle col3 = AddFColumns(col, col2);
 
+    PrintFColumn(col3);
+
     return 0;
 }
