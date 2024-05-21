@@ -3,7 +3,7 @@
 #include "common_defs.h"
 #include "ppp_column.h"
 
-int TestConstruction(void) {
+int TestConstruction(int* passes, int* fails) {
     float nums[3] = {3.0f, 2.0f, 6.7f};
     const char key[] = "Column";
 
@@ -12,14 +12,16 @@ int TestConstruction(void) {
     if (col) {
         DeleteFColumn(col);
         SUCCESS_PRINT("TestConstruction");
+        (*passes)++;
         return 1;
     } else {
         FAILURE_PRINT("TestConstruction");
+        (*fails)++;
         return 0;
     }
 }
 
-int TestPrint(void) {
+int TestPrint(int* passes, int* fails) {
     float nums[3] = {3.0f, 2.0f, 6.7f};
     const char key[] = "Column";
 
@@ -30,10 +32,12 @@ int TestPrint(void) {
     DeleteFColumn(col);
     SUCCESS_PRINT("TestPrint");
 
+    (*passes)++;
+
     return 1;
 }
 
-int TestAddition(void) {
+int TestAddition(int* passes, int* fails) {
     float nums[3] = {3.0f, 2.0f, 6.7f};
     const char key[] = "Column";
 
@@ -46,6 +50,7 @@ int TestAddition(void) {
         DeleteFColumn(col);
         DeleteFColumn(col2);
         FAILURE_PRINT("TestAddition");
+        (*fails)++;
         return 0;
     } else {
         printf("Visually confirm column is {6.0, 4.0, 13.4}\n");
@@ -56,6 +61,7 @@ int TestAddition(void) {
         DeleteFColumn(col3);
 
         SUCCESS_PRINT("TestAddition");
+        (*passes)++;
         return 1;
     }
 }
