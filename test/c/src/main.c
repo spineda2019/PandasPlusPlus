@@ -5,8 +5,11 @@ int main(int argc, char** argv) {
     const char key[] = "Column";
 
     FColumnHandle col = NewFColumn(nums, 3, key);
+    FColumnHandle col2 = NewFColumn(nums, 3, key);
 
     PrintFColumn(col);
+
+    FColumnHandle col3 = AddFColumns(col, col2);
 
     return 0;
 }

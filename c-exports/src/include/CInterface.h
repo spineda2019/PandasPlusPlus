@@ -30,17 +30,15 @@
 extern "C" {
 #endif
 
-typedef struct FColumn {
-    float *data_;
-    const char *key_;
-} FColumn_t;
-
 typedef void *FColumnHandle;
 
 C_API FColumnHandle NewFColumn(const float *data, size_t length,
                                const char *key);
 
 C_API void PrintFColumn(FColumnHandle column);
+
+C_API FColumnHandle AddFColumns(const FColumnHandle lhs,
+                                const FColumnHandle rhs);
 
 #ifdef __cplusplus
 }

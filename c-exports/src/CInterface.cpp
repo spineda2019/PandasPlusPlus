@@ -7,11 +7,7 @@
 #include <ppp/Column.hpp>
 #include <ppp/Dataframe.hpp>
 
-// Dataframe *create_dataframe_float(const char *file_path, bool
-// file_has_header) {
-//     return reinterpret_cast<Dataframe *>(
-//         new ppp::Dataframe<float>(file_path, file_has_header));
-// }
+#define EXTRACT_OBJECT(obj, type) *(reinterpret_cast<ppp::Column<type> *>(obj))
 
 C_API FColumnHandle NewFColumn(const float *data, size_t length,
                                const char *key) {
@@ -28,4 +24,10 @@ C_API void PrintFColumn(FColumnHandle column) {
     } else {
         std::cout << "Bad Column Handle..." << std::endl;
     }
+}
+
+C_API FColumnHandle AddFColumns(const FColumnHandle lhs,
+                                const FColumnHandle rhs) {
+    EXTRACT_OBJECT(lhs, float) + EXTRACT_OBJECT(rhs, float);
+    return nullptr;
 }
