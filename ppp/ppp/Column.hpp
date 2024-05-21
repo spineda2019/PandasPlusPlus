@@ -24,9 +24,9 @@
 #include <algorithm>
 #include <cstdint>
 #include <execution>
-#include <expected>
 #include <functional>
 #include <iostream>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <string_view>
@@ -64,8 +64,8 @@ class Column {
                                            const Column<V> &column);
 
     template <BasicEntry V>
-    friend inline std::expected<Column<V>, ErrorCode> operator+(
-        const Column<V> &lhs, const Column<V> &rhs);
+    friend inline std::optional<Column<V>> operator+(const Column<V> &lhs,
+                                                     const Column<V> &rhs);
 
  private:
     std::vector<T> data_;
@@ -83,17 +83,18 @@ inline std::ostream &operator<<(std::ostream &stream, const Column<V> &column) {
 }
 
 template <BasicEntry V>
-inline std::expected<Column<V>, ErrorCode> operator+(const Column<V> &lhs,
-                                                     const Column<V> &rhs) {
+inline std::optional<Column<V>> operator+(const Column<V> &lhs,
+                                          const Column<V> &rhs) {
     if (lhs.data_.size() != rhs.data_.size()) {
-        return std::unexpected{ErrorCode::MismatchedColumnSize};
+        return std::nullopt;
     } else {
         std::vector<V> sum(lhs.data_.size());
         std::transform(std::execution::par_unseq, lhs.data_.cbegin(),
                        lhs.data_.cend(), rhs.data_.cbegin(), sum.begin(),
                        std::plus<V>());
 
-        return Column{std::move(sum), lhs.key_ + " + " + rhs.key_};
+        return std::make_optional<Column<V>>(std::move(sum),
+                                             lhs.key_ + " + " + rhs.key_);
     }
 }
 
