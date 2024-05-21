@@ -40,6 +40,8 @@ C_API void PrintFColumn(FColumnHandle column);
 C_API FColumnHandle AddFColumns(const FColumnHandle lhs,
                                 const FColumnHandle rhs);
 
+C_API void DeleteFColumn(const FColumnHandle column);
+
 #ifdef __cplusplus
 }
 #endif

@@ -38,3 +38,9 @@ C_API FColumnHandle AddFColumns(const FColumnHandle lhs,
         return nullptr;
     }
 }
+
+C_API void DeleteFColumn(const FColumnHandle column) {
+    if (column) {
+        delete reinterpret_cast<ppp::Column<float> *>(column);
+    }
+}
