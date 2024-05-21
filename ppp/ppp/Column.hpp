@@ -56,6 +56,9 @@ class Column {
     Column(const std::vector<T> &&data, std::string_view key)
         : data_{data}, key_{key} {}
 
+    explicit Column(const Column<T> &&moved)
+        : data_{moved.data_}, key_{moved.key_} {}
+
     template <BasicEntry V>
     friend inline std::ostream &operator<<(std::ostream &stream,
                                            const Column<V> &column);
