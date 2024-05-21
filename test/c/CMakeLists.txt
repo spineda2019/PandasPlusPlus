@@ -4,7 +4,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(ctest DESCRIPTION "Test Suite for PandasPlusPlus" LANGUAGES C)
 
 set(CTEST_SOURCES
-    "src/main.c")
+    "src/main.c"
+    "src/column_test.c")
 
 add_executable(ctest ${CTEST_SOURCES})
 target_compile_features(ctest PUBLIC c_std_17)
