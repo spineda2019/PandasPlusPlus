@@ -28,6 +28,13 @@ C_API void PrintFColumn(FColumnHandle column) {
 
 C_API FColumnHandle AddFColumns(const FColumnHandle lhs,
                                 const FColumnHandle rhs) {
-    EXTRACT_OBJECT(lhs, float) + EXTRACT_OBJECT(rhs, float);
-    return nullptr;
+    if (!lhs || !rhs) {
+        return nullptr;
+    }
+    auto sum = EXTRACT_OBJECT(lhs, float) + EXTRACT_OBJECT(rhs, float);
+    if (sum.has_value()) {
+        return new ppp::Column<float>{std::move(sum.value())};
+    } else {
+        return nullptr;
+    }
 }
