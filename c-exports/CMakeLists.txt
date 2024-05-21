@@ -3,7 +3,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(libcexports DESCRIPTION "C Bindings for ppp" LANGUAGES C CXX)
 
-set(CEXPORT_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/CInterface.cpp")
+set(CEXPORT_SOURCES 
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/ppp_column.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/ppp_matrix.cpp")
 
 add_library(libcexports SHARED ${CEXPORT_SOURCES})
 
