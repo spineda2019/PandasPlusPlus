@@ -1,4 +1,4 @@
-project(pyppp DESCRIPTION "(Yet another) Matrix math module for python" LANGUAGES C)
+project(pyppp DESCRIPTION "(Yet another) Matrix math module for python" LANGUAGES CXX)
 
 find_package(Python3 COMPONENTS Development Interpreter)
 
@@ -10,11 +10,13 @@ endif()
     
 
 set(PY_SOURCES
-    "src/pppmodule.c")
+    "src/pppmodule.cpp")
 
 add_library(pyppp SHARED ${PY_SOURCES})
 
-target_compile_features(pyppp PUBLIC c_std_17)
+set_target_properties(pyppp PROPERTIES OUTPUT_NAME ppp PREFIX "")
+
+target_compile_features(pyppp PUBLIC cxx_std_23)
 
 target_include_directories(pyppp PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/include" ${Python3_INCLUDE_DIRS})
 
