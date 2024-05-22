@@ -11,110 +11,114 @@
 
 /* **************************** Column Factories **************************** */
 
-#define NewColumnImplementation(type)                                  \
+#define NewColumnImplementation(type, struct_ptr)                      \
     ppp::Column<type> *col{                                            \
         new ppp::Column{std::vector<type>{data, data + length}, key}}; \
+    struct_ptr->opaque_ptr = col;                                      \
                                                                        \
-    return col;
+    return opaque_struct;
 
-C_API FColumnHandle NewFColumn(const float *data, size_t length,
-                               const char *key) {
-    NewColumnImplementation(float);
+C_API FColumn NewFColumn(const float *data, size_t length, const char *key) {
+    FColumn opaque_struct = new FColumn_t{};
+    NewColumnImplementation(float, opaque_struct);
 }
 
-C_API DColumnHandle NewDColumn(const double *data, size_t length,
-                               const char *key) {
-    NewColumnImplementation(double);
+C_API DColumn NewDColumn(const double *data, size_t length, const char *key) {
+    DColumn opaque_struct = new DColumn_t{};
+    NewColumnImplementation(double, opaque_struct);
 }
 
-C_API IColumnHandle NewIColumn(const int *data, size_t length,
-                               const char *key) {
-    NewColumnImplementation(int);
+C_API IColumn NewIColumn(const int *data, size_t length, const char *key) {
+    IColumn opaque_struct = new IColumn_t{};
+    NewColumnImplementation(int, opaque_struct);
 }
 
-C_API LColumnHandle NewLColumn(const long *data, size_t length,
-                               const char *key) {
-    NewColumnImplementation(long);
+C_API LColumn NewLColumn(const long *data, size_t length, const char *key) {
+    LColumn opaque_struct = new LColumn_t{};
+    NewColumnImplementation(long, opaque_struct);
 }
 
 /* ****************************** Print Column ****************************** */
 
-#define PrintColumnImplementation(type)                               \
-    if (column) {                                                     \
-        std::cout << *(reinterpret_cast<ppp::Column<type> *>(column)) \
-                  << std::endl;                                       \
-    } else {                                                          \
-        std::cout << "Bad Column Handle..." << std::endl;             \
+#define PrintColumnImplementation(type)                       \
+    if (column && column->opaque_ptr) {                       \
+        std::cout << *(reinterpret_cast<ppp::Column<type> *>( \
+                         column->opaque_ptr))                 \
+                  << std::endl;                               \
+    } else {                                                  \
+        std::cout << "Bad Column Handle..." << std::endl;     \
     }
 
-C_API void PrintFColumn(const FColumnHandle column) {
+C_API void PrintFColumn(const FColumn column) {
     PrintColumnImplementation(float);
 }
 
-C_API void PrintDColumn(const DColumnHandle column) {
+C_API void PrintDColumn(const DColumn column) {
     PrintColumnImplementation(double);
 }
 
-C_API void PrintIColumn(const IColumnHandle column) {
+C_API void PrintIColumn(const IColumn column) {
     PrintColumnImplementation(int);
 }
 
-C_API void PrintLColumn(const LColumnHandle column) {
+C_API void PrintLColumn(const LColumn column) {
     PrintColumnImplementation(long);
 }
 
 /* ******************************* Add Column ******************************* */
 
-#define AddColumnImplementation(type)                                   \
-    if (!lhs || !rhs) {                                                 \
-        return nullptr;                                                 \
-    }                                                                   \
-    auto sum = EXTRACT_OBJECT(lhs, float) + EXTRACT_OBJECT(rhs, float); \
-    if (sum.has_value()) {                                              \
-        return new ppp::Column<float>{std::move(sum.value())};          \
-    } else {                                                            \
-        return nullptr;                                                 \
+#define AddColumnImplementation(type, opaque_struct)                         \
+    if (!lhs || !rhs) {                                                      \
+        return nullptr;                                                      \
+    } else if (!lhs->opaque_ptr || !rhs->opaque_ptr) {                       \
+        return nullptr;                                                      \
+    }                                                                        \
+    auto sum = (*(reinterpret_cast<ppp::Column<type> *>(lhs->opaque_ptr))) + \
+               (*(reinterpret_cast<ppp::Column<type> *>(rhs->opaque_ptr)));  \
+    if (sum.has_value()) {                                                   \
+        auto new_col = new ppp::Column<type>{std::move(sum.value())};        \
+        opaque_struct->opaque_ptr = new_col;                                 \
+        return opaque_struct;                                                \
+    } else {                                                                 \
+        return nullptr;                                                      \
     }
 
-C_API FColumnHandle AddFColumns(const FColumnHandle lhs,
-                                const FColumnHandle rhs) {
-    AddColumnImplementation(float);
+C_API FColumn AddFColumns(const FColumn lhs, const FColumn rhs) {
+    FColumn opaque_struct = new FColumn_t{};
+    AddColumnImplementation(float, opaque_struct);
 }
 
-C_API DColumnHandle AddDColumns(const DColumnHandle lhs,
-                                const DColumnHandle rhs) {
-    AddColumnImplementation(double);
+C_API DColumn AddDColumns(const DColumn lhs, const DColumn rhs) {
+    DColumn opaque_struct = new DColumn_t{};
+    AddColumnImplementation(double, opaque_struct);
 }
 
-C_API IColumnHandle AddIColumns(const IColumnHandle lhs,
-                                const IColumnHandle rhs) {
-    AddColumnImplementation(int);
+C_API IColumn AddIColumns(const IColumn lhs, const IColumn rhs) {
+    IColumn opaque_struct = new IColumn_t{};
+    AddColumnImplementation(int, opaque_struct);
 }
 
-C_API LColumnHandle AddLColumns(const LColumnHandle lhs,
-                                const LColumnHandle rhs) {
-    AddColumnImplementation(long);
+C_API LColumn AddLColumns(const LColumn lhs, const LColumn rhs) {
+    LColumn opaque_struct = new LColumn_t{};
+    AddColumnImplementation(long, opaque_struct);
 }
 
 /* ***************************** Delete Column ****************************** */
 
-#define DeleteColumnImplementation(type)                      \
-    if (column) {                                             \
-        delete reinterpret_cast<ppp::Column<type> *>(column); \
+#define DeleteColumnImplementation(type)                                      \
+    if (column) {                                                             \
+        if (column->opaque_ptr) {                                             \
+            delete reinterpret_cast<ppp::Column<type> *>(column->opaque_ptr); \
+            delete column;                                                    \
+        } else {                                                              \
+            delete column;                                                    \
+        }                                                                     \
     }
 
-C_API void DeleteFColumn(FColumnHandle column) {
-    DeleteColumnImplementation(float);
-}
+C_API void DeleteFColumn(FColumn column) { DeleteColumnImplementation(float); }
 
-C_API void DeleteDColumn(DColumnHandle column) {
-    DeleteColumnImplementation(double);
-}
+C_API void DeleteDColumn(DColumn column) { DeleteColumnImplementation(double); }
 
-C_API void DeleteIColumn(IColumnHandle column) {
-    DeleteColumnImplementation(int);
-}
+C_API void DeleteIColumn(IColumn column) { DeleteColumnImplementation(int); }
 
-C_API void DeleteLColumn(LColumnHandle column) {
-    DeleteColumnImplementation(long);
-}
+C_API void DeleteLColumn(LColumn column) { DeleteColumnImplementation(long); }

@@ -10,57 +10,61 @@
 extern "C" {
 #endif
 
-typedef void *FColumnHandle;
-typedef void *DColumnHandle;
-typedef void *IColumnHandle;
-typedef void *LColumnHandle;
+typedef struct FColumn_t {
+    void *opaque_ptr;
+} *FColumn;
+
+typedef struct DColumn_t {
+    void *opaque_ptr;
+} *DColumn;
+
+typedef struct IColumn_t {
+    void *opaque_ptr;
+} *IColumn;
+
+typedef struct LColumn_t {
+    void *opaque_ptr;
+} *LColumn;
 
 /* **************************** Column Factories **************************** */
 
-C_API FColumnHandle NewFColumn(const float *data, size_t length,
-                               const char *key);
+C_API FColumn NewFColumn(const float *data, size_t length, const char *key);
 
-C_API DColumnHandle NewDColumn(const double *data, size_t length,
-                               const char *key);
+C_API DColumn NewDColumn(const double *data, size_t length, const char *key);
 
-C_API IColumnHandle NewIColumn(const int *data, size_t length, const char *key);
+C_API IColumn NewIColumn(const int *data, size_t length, const char *key);
 
-C_API LColumnHandle NewLColumn(const long *data, size_t length,
-                               const char *key);
+C_API LColumn NewLColumn(const long *data, size_t length, const char *key);
 
 /* ****************************** Print Column ****************************** */
 
-C_API void PrintFColumn(const FColumnHandle column);
+C_API void PrintFColumn(const FColumn column);
 
-C_API void PrintDColumn(const DColumnHandle column);
+C_API void PrintDColumn(const DColumn column);
 
-C_API void PrintIColumn(const IColumnHandle column);
+C_API void PrintIColumn(const IColumn column);
 
-C_API void PrintLColumn(const LColumnHandle column);
+C_API void PrintLColumn(const LColumn column);
 
 /* ******************************* Add Column ******************************* */
 
-C_API FColumnHandle AddFColumns(const FColumnHandle lhs,
-                                const FColumnHandle rhs);
+C_API FColumn AddFColumns(const FColumn lhs, const FColumn rhs);
 
-C_API DColumnHandle AddDColumns(const DColumnHandle lhs,
-                                const DColumnHandle rhs);
+C_API DColumn AddDColumns(const DColumn lhs, const DColumn rhs);
 
-C_API IColumnHandle AddIColumns(const IColumnHandle lhs,
-                                const IColumnHandle rhs);
+C_API IColumn AddIColumns(const IColumn lhs, const IColumn rhs);
 
-C_API LColumnHandle AddLColumns(const LColumnHandle lhs,
-                                const LColumnHandle rhs);
+C_API LColumn AddLColumns(const LColumn lhs, const LColumn rhs);
 
 /* ***************************** Delete Column ****************************** */
 
-C_API void DeleteFColumn(FColumnHandle column);
+C_API void DeleteFColumn(FColumn column);
 
-C_API void DeleteDColumn(DColumnHandle column);
+C_API void DeleteDColumn(DColumn column);
 
-C_API void DeleteIColumn(IColumnHandle column);
+C_API void DeleteIColumn(IColumn column);
 
-C_API void DeleteLColumn(LColumnHandle column);
+C_API void DeleteLColumn(LColumn column);
 
 #ifdef __cplusplus
 }
