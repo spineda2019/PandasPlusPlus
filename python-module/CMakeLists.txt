@@ -21,3 +21,4 @@ target_compile_features(pyppp PUBLIC cxx_std_23)
 target_include_directories(pyppp PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/include" ${Python3_INCLUDE_DIRS})
 
 target_link_directories(pyppp PUBLIC "${Python3_LIBRARY_DIRS}")
+target_link_libraries(pyppp PUBLIC libcexports libppp)
