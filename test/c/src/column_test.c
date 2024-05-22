@@ -7,7 +7,7 @@ int TestConstruction(int* passes, int* fails) {
     float nums[3] = {3.0f, 2.0f, 6.7f};
     const char key[] = "Column";
 
-    FColumnHandle col = NewFColumn(nums, 3, key);
+    FColumn col = NewFColumn(nums, 3, key);
 
     if (col) {
         DeleteFColumn(col);
@@ -25,7 +25,7 @@ int TestPrint(int* passes, int* fails) {
     float nums[3] = {3.0f, 2.0f, 6.7f};
     const char key[] = "Column";
 
-    FColumnHandle col = NewFColumn(nums, 3, key);
+    FColumn col = NewFColumn(nums, 3, key);
     printf("Visually confirm column is {3.0, 2.0, 6.7}\n");
     PrintFColumn(col);
 
@@ -41,10 +41,10 @@ int TestAddition(int* passes, int* fails) {
     float nums[3] = {3.0f, 2.0f, 6.7f};
     const char key[] = "Column";
 
-    FColumnHandle col = NewFColumn(nums, 3, key);
-    FColumnHandle col2 = NewFColumn(nums, 3, key);
+    FColumn col = NewFColumn(nums, 3, key);
+    FColumn col2 = NewFColumn(nums, 3, key);
 
-    FColumnHandle col3 = AddFColumns(col, col2);
+    FColumn col3 = AddFColumns(col, col2);
 
     if (!col3) {
         DeleteFColumn(col);
