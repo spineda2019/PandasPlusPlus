@@ -25,6 +25,17 @@
 /* Everything Else */
 #include <stdio.h>
 
+#include "modsupport.h"
+#include "moduleobject.h"
+#include "pyport.h"
+
+static struct PyModuleDef ppp_module = {
+    .m_name = "ppp",
+    .m_doc = "PandasPlusPlus, a knockoff Pandas written in C++",
+};
+
+PyMODINIT_FUNC PyInit_ppp(void) { return PyModule_Create(&ppp_module); }
+
 static PyObject *spam_sytem(PyObject *self, PyObject *args) {
     const char *command;
 
