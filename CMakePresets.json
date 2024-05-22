@@ -148,6 +148,10 @@
                     "type": "BOOL",
                     "value": "ON"
                 },
+                "BUILD_EXPORTS": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
                 "BENCHMARK": {
                     "type": "BOOL",
                     "value": "OFF"
