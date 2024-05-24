@@ -1,6 +1,7 @@
 #include "include/column_tests.hpp"
 
 #include <memory>
+#include <optional>
 #include <string_view>
 #include <vector>
 
@@ -62,11 +63,43 @@ bool TestAddition(const std::unique_ptr<std::size_t>& passes,
         return true;
     }
 }
+
+bool TestIndexing(const std::unique_ptr<std::size_t>& passes,
+                  const std::unique_ptr<std::size_t>& fails) {
+    std::vector<int> data{1, 5, 6};
+    ppp::Column col{data, "Key"};
+
+    std::optional<int> value{col[0]};
+
+    if (!value.has_value()) {
+        FailNotification(col, "TestIndexing");
+        (*fails)++;
+        return false;
+    } else if (value.value() != 1) {
+        FailNotification(col, "TestIndexing");
+        (*fails)++;
+        return false;
+    }
+
+    value = col[4];
+
+    if (value.has_value()) {
+        FailNotification(col, "TestIndexing");
+        (*fails)++;
+        return false;
+    }
+
+    PassNotification(col, "TestIndexing");
+    (*passes)++;
+    return true;
+}
+
 }  // namespace
 
 bool ColumnMasterTest(const std::unique_ptr<std::size_t>& passes,
                       const std::unique_ptr<std::size_t>& fails) {
-    return TestConstruction(passes, fails) && TestAddition(passes, fails);
+    return TestConstruction(passes, fails) && TestAddition(passes, fails) &&
+           TestIndexing(passes, fails);
 }
 
 }  // namespace column_test
