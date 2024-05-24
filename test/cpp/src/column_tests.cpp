@@ -94,12 +94,28 @@ bool TestIndexing(const std::unique_ptr<std::size_t>& passes,
     return true;
 }
 
+bool TestSum(const std::unique_ptr<std::size_t>& passes,
+             const std::unique_ptr<std::size_t>& fails) {
+    std::vector<int> data{1, 5, 6};
+    ppp::Column col{data, "Key"};
+
+    if (col.Sum() == 12) {
+        PassNotification(col, "TestSum");
+        (*passes)++;
+        return true;
+    } else {
+        FailNotification(col, "TestSum");
+        (*fails)++;
+        return false;
+    }
+}
+
 }  // namespace
 
 bool ColumnMasterTest(const std::unique_ptr<std::size_t>& passes,
                       const std::unique_ptr<std::size_t>& fails) {
     return TestConstruction(passes, fails) && TestAddition(passes, fails) &&
-           TestIndexing(passes, fails);
+           TestIndexing(passes, fails) && TestSum(passes, fails);
 }
 
 }  // namespace column_test
