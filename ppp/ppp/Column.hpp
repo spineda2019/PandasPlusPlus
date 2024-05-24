@@ -52,16 +52,16 @@ concept BasicEntry = requires(T first, T second) {
 template <BasicEntry T>
 class Column {
  public:
-    Column(const std::vector<T> &data, std::string_view key)
+    constexpr Column(const std::vector<T> &data, std::string_view key)
         : data_{data}, key_{key} {}
 
-    Column(const std::vector<T> &&data, std::string_view key)
+    constexpr Column(const std::vector<T> &&data, std::string_view key)
         : data_{data}, key_{key} {}
 
-    explicit Column(const Column<T> &&moved)
+    constexpr explicit Column(const Column<T> &&moved)
         : data_{moved.data_}, key_{moved.key_} {}
 
-    inline T Sum() {
+    constexpr inline T Sum() {
         return std::reduce(std::execution::par_unseq, data_.begin(),
                            data_.end());
     }
@@ -71,10 +71,10 @@ class Column {
                                            const Column<V> &column);
 
     template <BasicEntry V>
-    friend inline std::optional<Column<V>> operator+(const Column<V> &lhs,
-                                                     const Column<V> &rhs);
+    constexpr friend inline std::optional<Column<V>> operator+(
+        const Column<V> &lhs, const Column<V> &rhs);
 
-    inline std::optional<T> operator[](std::size_t index) {
+    constexpr inline std::optional<T> operator[](std::size_t index) {
         if (index >= data_.size()) {
             return std::nullopt;
         } else {
@@ -98,8 +98,8 @@ inline std::ostream &operator<<(std::ostream &stream, const Column<V> &column) {
 }
 
 template <BasicEntry V>
-inline std::optional<Column<V>> operator+(const Column<V> &lhs,
-                                          const Column<V> &rhs) {
+constexpr inline std::optional<Column<V>> operator+(const Column<V> &lhs,
+                                                    const Column<V> &rhs) {
     if (lhs.data_.size() != rhs.data_.size()) {
         return std::nullopt;
     } else {
