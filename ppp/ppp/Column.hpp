@@ -27,6 +27,7 @@
 #include <execution>
 #include <functional>
 #include <iostream>
+#include <numeric>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -59,6 +60,11 @@ class Column {
 
     explicit Column(const Column<T> &&moved)
         : data_{moved.data_}, key_{moved.key_} {}
+
+    inline T Sum() {
+        return std::reduce(std::execution::par_unseq, data_.begin(),
+                           data_.end());
+    }
 
     template <BasicEntry V>
     friend inline std::ostream &operator<<(std::ostream &stream,
