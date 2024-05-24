@@ -27,6 +27,7 @@
 
 #include <cstddef>
 
+#include "listobject.h"
 #include "longobject.h"
 #include "methodobject.h"
 #include "modsupport.h"
@@ -43,7 +44,7 @@ typedef struct {
     FColumn column;
 } FColumnObject;
 
-static void DeallocFColumn(FColumnObject *self) {
+static void DeallocPyFColumn(FColumnObject *self) {
     Py_XDECREF(self->column);
     DeleteFColumn(self->column);
     Py_TYPE(self)->tp_free((PyObject *)self);
@@ -63,9 +64,31 @@ static PyObject *NewPyFColumn(PyTypeObject *type, PyObject *args,
     }
 }
 
+static int InitPyFColumn(FColumnObject *self, PyObject *args, PyObject *kwds) {
+    (void)kwds;
+
+    PyObject list{};
+    const char *key{};
+
+    if (!PyArg_ParseTuple(args, "Os", &list, key)) {
+        return -1;
+    }
+
+    if (!PyList_Check(&list)) {
+        return -1;
+    }
+
+    size_t length{static_cast<size_t>(PyList_Size(&list))};
+
+    return 0;
+}
+
 static PyObject *FSumFunction(PyObject *self, PyObject *args) {
     (void)args;
-    return (PyObject *)10;
+
+    FColumnObject *col{(FColumnObject *)self};
+
+    return PyLong_FromLong(10);
 }
 
 static struct PyMethodDef FSum = {
@@ -94,9 +117,10 @@ static PyTypeObject PyFColumn = {
     .ob_base = PyVarObject_HEAD_INIT(NULL, 0) /* Boilerplate */
                    .tp_name = "ppp.FColumn",
     .tp_basicsize = sizeof(FColumnObject),
-    .tp_dealloc = (destructor)DeallocFColumn,
+    .tp_dealloc = (destructor)DeallocPyFColumn,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_doc = "PPP Column of Floats",
+    .tp_methods = FColumnMethods,
     .tp_new = NewPyFColumn,
 };
 
