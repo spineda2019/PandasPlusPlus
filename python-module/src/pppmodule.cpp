@@ -27,51 +27,40 @@
 
 #include <cstddef>
 
-#include "listobject.h"
 #include "longobject.h"
 #include "methodobject.h"
 #include "modsupport.h"
 #include "moduleobject.h"
 #include "object.h"
-#include "ppp/Column.hpp"
 #include "ppp_column.h"
-#include "pyerrors.h"
 #include "pyport.h"
 #include "pytypedefs.h"
 
 /* ************************ FColumn Object & Methods ************************ */
 
-static void DeallocFColumn(PyObject *self) {
-    DeleteFColumn(reinterpret_cast<FColumn>(self));
+typedef struct {
+    PyObject_HEAD;
+    FColumn column;
+} FColumnObject;
+
+static void DeallocFColumn(FColumnObject *self) {
+    Py_XDECREF(self->column);
+    DeleteFColumn(self->column);
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
-static int InitFColumn(PyObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *NewPyFColumn(PyTypeObject *type, PyObject *args,
+                              PyObject *kwds) {
     (void)kwds;
 
-    float *list_start;
-    const char *key_str;
+    FColumnObject *self{(FColumnObject *)type->tp_alloc(type, 0)};
 
-    if (!PyArg_ParseTuple(args, "[f]s", list_start, key_str)) {
-        return -1;
+    if (self != NULL) {
+        self->column = NewFColumn({}, 0, "");
+        return (PyObject *)self;
+    } else {
+        return NULL;
     }
-
-    PyObject *float_list = PyList_GetItem(args, 0);
-    if (float_list == NULL) {
-        return -1;
-    }
-
-    if (!PyList_Check(float_list)) {
-        return -1;
-    }
-
-    PyErr_Clear();
-    size_t length = static_cast<size_t>(PyList_Size(float_list));
-    if (PyErr_Occurred()) {
-        return -1;
-    }
-
-    self = (PyObject *)NewFColumn(list_start, length, key_str);
-    return 0;
 }
 
 static PyObject *FSumFunction(PyObject *self, PyObject *args) {
@@ -102,12 +91,13 @@ static PyMethodDef FColumnMethods[] = {
 };
 
 static PyTypeObject PyFColumn = {
-    .tp_name = "ppp.FColumn",
-    .tp_basicsize = sizeof(ppp::Column<float>),
+    .ob_base = PyVarObject_HEAD_INIT(NULL, 0) /* Boilerplate */
+                   .tp_name = "ppp.FColumn",
+    .tp_basicsize = sizeof(FColumnObject),
     .tp_dealloc = (destructor)DeallocFColumn,
+    .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_doc = "PPP Column of Floats",
-    .tp_methods = FColumnMethods,
-    .tp_init = (initproc)InitFColumn,
+    .tp_new = NewPyFColumn,
 };
 
 static struct PyModuleDef ppp_module = {
