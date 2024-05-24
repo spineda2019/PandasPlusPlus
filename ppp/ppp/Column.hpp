@@ -22,6 +22,7 @@
 #define PPP_PPP_COLUMN_HPP_
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <execution>
 #include <functional>
@@ -66,6 +67,14 @@ class Column {
     template <BasicEntry V>
     friend inline std::optional<Column<V>> operator+(const Column<V> &lhs,
                                                      const Column<V> &rhs);
+
+    inline std::optional<T> operator[](std::size_t index) {
+        if (index >= data_.size()) {
+            return std::nullopt;
+        } else {
+            return data_[index];
+        }
+    }
 
  private:
     std::vector<T> data_;
