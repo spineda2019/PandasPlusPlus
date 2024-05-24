@@ -6,7 +6,7 @@
             "name": "release-base",
             "generator": "Ninja",
             "hidden": true,
-            "binaryDir": "${sourceDir}/build/release",
+            "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": {
                     "type": "STRING",
@@ -19,7 +19,7 @@
             "name": "release-clr-base",
             "generator": "Visual Studio 17 2022",
             "hidden": true,
-            "binaryDir": "${sourceDir}/build/release-clr",
+            "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": {
                     "type": "STRING",
@@ -32,7 +32,7 @@
             "name": "debug-base",
             "generator": "Ninja",
             "hidden": true,
-            "binaryDir": "${sourceDir}/build/debug",
+            "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": {
                     "type": "STRING",
@@ -45,7 +45,7 @@
             "name": "debug-clr-base",
             "generator": "Visual Studio 17 2022",
             "hidden": true,
-            "binaryDir": "${sourceDir}/build/debug-clr",
+            "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": {
                     "type": "STRING",
@@ -58,7 +58,7 @@
             "name": "test-base",
             "generator": "Ninja",
             "hidden": true,
-            "binaryDir": "${sourceDir}/build/test-suite",
+            "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": {
                     "type": "STRING",
