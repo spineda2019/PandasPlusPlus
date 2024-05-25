@@ -80,8 +80,8 @@ class Column {
         const Column<V> &lhs, const Column<V> &rhs);
 
     template <BasicEntry V>
-    constexpr friend inline std::optional<Column<V>> operator*(
-        const Column<V> &lhs, const Column<V> &rhs);
+    constexpr friend inline std::optional<V> operator*(const Column<V> &lhs,
+                                                       const Column<V> &rhs);
 
     template <BasicEntry V>
     constexpr friend inline bool operator==(const Column<V> &lhs,
