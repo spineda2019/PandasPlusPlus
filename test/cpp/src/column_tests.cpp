@@ -53,7 +53,14 @@ bool TestAddition(const std::unique_ptr<std::size_t>& passes,
 
     auto sum = col + col;
 
+    std::vector<int> data2{2, 10, 12};
+    ppp::Column col2{data2, "Key"};
+
     if (!sum.has_value()) {
+        FailNotification(col, "TestAddition");
+        (*fails)++;
+        return false;
+    } else if (sum.value() != col2) {
         FailNotification(col, "TestAddition");
         (*fails)++;
         return false;
@@ -81,7 +88,14 @@ bool TestSubtraction(const std::unique_ptr<std::size_t>& passes,
 
     auto sum = col - col;
 
+    std::vector<int> data2{0, 0, 0};
+    ppp::Column col2{data2, "Key"};
+
     if (!sum.has_value()) {
+        FailNotification(col, "TestAddition");
+        (*fails)++;
+        return false;
+    } else if (sum.value() != col2) {
         FailNotification(col, "TestAddition");
         (*fails)++;
         return false;
