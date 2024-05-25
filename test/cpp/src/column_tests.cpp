@@ -92,6 +92,31 @@ bool TestSubtraction(const std::unique_ptr<std::size_t>& passes,
     }
 }
 
+bool TestComparison(const std::unique_ptr<std::size_t>& passes,
+                    const std::unique_ptr<std::size_t>& fails) {
+    std::vector<int> data{1, 5, 6};
+    std::vector<int> data2{1, 5, 6};
+    std::vector<int> short_data{1, 5};
+
+    ppp::Column col{data, "Key"};
+    ppp::Column col2{data2, "Key"};
+    ppp::Column short_col{short_data, "Key"};
+
+    if (col == short_col) {
+        FailNotification(col, "TestComparison");
+        (*fails)++;
+        return false;
+    } else if (col != col2) {
+        FailNotification(col, "TestComparison");
+        (*fails)++;
+        return false;
+    } else {
+        PassNotification(col, "TestComparison");
+        (*passes)++;
+        return true;
+    }
+}
+
 bool TestIndexing(const std::unique_ptr<std::size_t>& passes,
                   const std::unique_ptr<std::size_t>& fails) {
     std::vector<int> data{1, 5, 6};
@@ -143,7 +168,8 @@ bool TestSum(const std::unique_ptr<std::size_t>& passes,
 bool ColumnMasterTest(const std::unique_ptr<std::size_t>& passes,
                       const std::unique_ptr<std::size_t>& fails) {
     return TestConstruction(passes, fails) && TestAddition(passes, fails) &&
-           TestIndexing(passes, fails) && TestSum(passes, fails);
+           TestIndexing(passes, fails) && TestSum(passes, fails) &&
+           TestComparison(passes, fails);
 }
 
 }  // namespace column_test
