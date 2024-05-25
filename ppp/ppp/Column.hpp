@@ -79,6 +79,10 @@ class Column {
     constexpr friend inline std::optional<Column<V>> operator-(
         const Column<V> &lhs, const Column<V> &rhs);
 
+    template <BasicEntry V>
+    constexpr friend inline bool operator==(const Column<V> &lhs,
+                                            const Column<V> &rhs);
+
     constexpr inline std::optional<T> operator[](std::size_t index) {
         if (index >= data_.size()) {
             return std::nullopt;
@@ -132,6 +136,11 @@ constexpr inline std::optional<Column<V>> operator-(const Column<V> &lhs,
         return std::make_optional<Column<V>>(std::move(diff),
                                              lhs.key_ + " - " + rhs.key_);
     }
+}
+
+template <BasicEntry V>
+constexpr inline bool operator==(const Column<V> &lhs, const Column<V> &rhs) {
+    return lhs.data_ == rhs.data_;
 }
 
 }  // namespace ppp
