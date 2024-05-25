@@ -64,6 +64,34 @@ bool TestAddition(const std::unique_ptr<std::size_t>& passes,
     }
 }
 
+bool TestSubtraction(const std::unique_ptr<std::size_t>& passes,
+                     const std::unique_ptr<std::size_t>& fails) {
+    std::vector<int> data{1, 5, 6};
+    std::vector<int> short_data{1, 5};
+
+    ppp::Column col{data, "Key"};
+    ppp::Column short_col{short_data, "Key"};
+
+    auto bad_sum = col - short_col;
+    if (bad_sum.has_value()) {
+        FailNotification(col, "TestAddition");
+        (*fails)++;
+        return false;
+    }
+
+    auto sum = col - col;
+
+    if (!sum.has_value()) {
+        FailNotification(col, "TestAddition");
+        (*fails)++;
+        return false;
+    } else {
+        PassNotification(sum.value(), "TestAddition");
+        (*passes)++;
+        return true;
+    }
+}
+
 bool TestIndexing(const std::unique_ptr<std::size_t>& passes,
                   const std::unique_ptr<std::size_t>& fails) {
     std::vector<int> data{1, 5, 6};
