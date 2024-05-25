@@ -46,6 +46,7 @@ concept BasicEntry = requires(T first, T second) {
     first + second;
     first - second;
     first / second;
+    (first * second);
     std::cout << first;
 };
 
@@ -72,6 +73,10 @@ class Column {
 
     template <BasicEntry V>
     constexpr friend inline std::optional<Column<V>> operator+(
+        const Column<V> &lhs, const Column<V> &rhs);
+
+    template <BasicEntry V>
+    constexpr friend inline std::optional<Column<V>> operator-(
         const Column<V> &lhs, const Column<V> &rhs);
 
     constexpr inline std::optional<T> operator[](std::size_t index) {
@@ -110,6 +115,22 @@ constexpr inline std::optional<Column<V>> operator+(const Column<V> &lhs,
 
         return std::make_optional<Column<V>>(std::move(sum),
                                              lhs.key_ + " + " + rhs.key_);
+    }
+}
+
+template <BasicEntry V>
+constexpr inline std::optional<Column<V>> operator-(const Column<V> &lhs,
+                                                    const Column<V> &rhs) {
+    if (lhs.data_.size() != rhs.data_.size()) {
+        return std::nullopt;
+    } else {
+        std::vector<V> diff(lhs.data_.size());
+        std::transform(std::execution::par_unseq, lhs.data_.cbegin(),
+                       lhs.data_.cend(), rhs.data_.cbegin(), diff.begin(),
+                       std::minus<V>());
+
+        return std::make_optional<Column<V>>(std::move(diff),
+                                             lhs.key_ + " - " + rhs.key_);
     }
 }
 
