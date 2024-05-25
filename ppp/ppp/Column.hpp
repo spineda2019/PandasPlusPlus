@@ -80,6 +80,10 @@ class Column {
         const Column<V> &lhs, const Column<V> &rhs);
 
     template <BasicEntry V>
+    constexpr friend inline std::optional<Column<V>> operator*(
+        const Column<V> &lhs, const Column<V> &rhs);
+
+    template <BasicEntry V>
     constexpr friend inline bool operator==(const Column<V> &lhs,
                                             const Column<V> &rhs);
 
@@ -141,6 +145,20 @@ constexpr inline std::optional<Column<V>> operator-(const Column<V> &lhs,
 template <BasicEntry V>
 constexpr inline bool operator==(const Column<V> &lhs, const Column<V> &rhs) {
     return lhs.data_ == rhs.data_;
+}
+
+template <BasicEntry V>
+constexpr inline std::optional<V> operator*(const Column<V> &lhs,
+                                            const Column<V> &rhs) {
+    if (lhs.data_.size() != rhs.data_.size()) [[unlikely]] {
+        return std::nullopt;
+    } else {
+        V sum{};
+        for (std::size_t index{0}; index < lhs.data_.size(); index++) {
+            sum += lhs.data_[index] * rhs.data_[index];
+        }
+        return sum;
+    }
 }
 
 }  // namespace ppp
