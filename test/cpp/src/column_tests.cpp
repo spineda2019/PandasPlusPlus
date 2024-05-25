@@ -183,7 +183,7 @@ bool ColumnMasterTest(const std::unique_ptr<std::size_t>& passes,
                       const std::unique_ptr<std::size_t>& fails) {
     return TestConstruction(passes, fails) && TestAddition(passes, fails) &&
            TestIndexing(passes, fails) && TestSum(passes, fails) &&
-           TestComparison(passes, fails);
+           TestComparison(passes, fails) && TestSubtraction(passes, fails);
 }
 
 }  // namespace column_test
