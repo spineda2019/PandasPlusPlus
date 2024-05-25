@@ -5,3 +5,4 @@ project(ppp-test DESCRIPTION "Test Suite for PandasPlusPlus")
 
 add_subdirectory(c)
 add_subdirectory(cpp)
+add_subdirectory(python)
