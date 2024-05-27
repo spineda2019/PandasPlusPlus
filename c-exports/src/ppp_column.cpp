@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 
+#include <cmath>
 #include <cstdlib>
 #include <iostream>
 #include <ppp/Column.hpp>
@@ -122,3 +123,23 @@ C_API void DeleteDColumn(DColumn column) { DeleteColumnImplementation(double); }
 C_API void DeleteIColumn(IColumn column) { DeleteColumnImplementation(int); }
 
 C_API void DeleteLColumn(LColumn column) { DeleteColumnImplementation(long); }
+
+/* ******************************* Sum Method ******************************* */
+
+#define SumColumnImplementation(type)                                      \
+    if (column) {                                                          \
+        return (reinterpret_cast<ppp::Column<type> *>(column->opaque_ptr)) \
+            ->Sum();                                                       \
+    } else {                                                               \
+        return std::nan("-1");                                             \
+    }
+
+C_API float SumFColumn(const FColumn column) { SumColumnImplementation(float); }
+
+C_API float SumDColumn(const DColumn column) {
+    SumColumnImplementation(double);
+}
+
+C_API float SumIColumn(const IColumn column) { SumColumnImplementation(int); }
+
+C_API float SumLColumn(const LColumn column) { SumColumnImplementation(long); }

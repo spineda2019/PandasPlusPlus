@@ -66,6 +66,16 @@ C_API void DeleteIColumn(IColumn column);
 
 C_API void DeleteLColumn(LColumn column);
 
+/* ******************************* Sum Method ******************************* */
+
+C_API float SumFColumn(const FColumn column);
+
+C_API float SumDColumn(const DColumn column);
+
+C_API float SumIColumn(const IColumn column);
+
+C_API float SumLColumn(const LColumn column);
+
 #ifdef __cplusplus
 }
 #endif
