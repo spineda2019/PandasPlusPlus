@@ -26,7 +26,10 @@
 #include <stdio.h>
 
 #include <cstddef>
+#include <iostream>
+#include <vector>
 
+#include "floatobject.h"
 #include "listobject.h"
 #include "longobject.h"
 #include "methodobject.h"
@@ -34,8 +37,11 @@
 #include "moduleobject.h"
 #include "object.h"
 #include "ppp_column.h"
+#include "pyerrors.h"
 #include "pyport.h"
 #include "pytypedefs.h"
+
+#define DEBUG(str) std::cout << "DEBUG: " << str << std::endl;
 
 /* ************************ FColumn Object & Methods ************************ */
 
@@ -57,28 +63,54 @@ static PyObject *NewPyFColumn(PyTypeObject *type, PyObject *args,
     FColumnObject *self{(FColumnObject *)type->tp_alloc(type, 0)};
 
     if (self != NULL) {
-        self->column = NewFColumn({}, 0, "");
         return (PyObject *)self;
     } else {
+        Py_XDECREF(self);
         return NULL;
     }
 }
 
 static int InitPyFColumn(FColumnObject *self, PyObject *args, PyObject *kwds) {
-    (void)kwds;
-
     PyObject *list{};
+
     const char *key{};
 
-    if (!PyArg_ParseTuple(args, "Os", list, key)) {
+    if (!PyArg_ParseTuple(args, "Os", &list, &key)) {
         return -1;
     }
 
-    if (!PyList_Check(&list)) {
+    if (PyList_Check(list) < 0) {
         return -1;
     }
 
     size_t length{static_cast<size_t>(PyList_Size(list))};
+
+    std::vector<float> data(length);
+
+    for (Py_ssize_t index = 0; index < length; index++) {
+        PyObject *current_list_item = PyList_GetItem(list, index);
+
+        if (current_list_item == NULL) {
+            return -1;
+        }
+
+        data[index] = PyFloat_AsDouble(current_list_item);
+
+        if (PyErr_Occurred()) {
+            return -1;
+        }
+    }
+
+    FColumn column = NewFColumn(&(data[0]), length, key);
+
+    if (column) {
+        PyObject *tmp{(PyObject *)self->column};
+        Py_IncRef((PyObject *)column);
+        self->column = column;
+        Py_XDECREF(tmp);
+    } else {
+        return -1;
+    }
 
     return 0;
 }
@@ -114,6 +146,7 @@ static PyTypeObject PyFColumn = {
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_doc = "PPP Column of Floats",
     .tp_methods = FColumnMethods,
+    .tp_init = (initproc)InitPyFColumn,
     .tp_new = NewPyFColumn,
 };
 
