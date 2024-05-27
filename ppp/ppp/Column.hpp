@@ -83,7 +83,7 @@ class Column {
     }
 
     constexpr void Append(T &&value) { data_.emplace_back(value); }
-    constexpr void Append(T &value) { data_.emplace_back(value); }
+    constexpr void Append(const T &value) { data_.emplace_back(value); }
 
     template <BasicEntry V>
     friend inline std::ostream &operator<<(std::ostream &stream,
