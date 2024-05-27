@@ -7,7 +7,7 @@ int main(int argc, char** argv) {
     int fails = 0;
 
     TestConstruction(&passes, &fails) && TestPrint(&passes, &fails) &&
-        TestAddition(&passes, &fails);
+        TestAddition(&passes, &fails) && TestSum(&passes, &fails);
 
     printf("Total Passes: %i\n", passes);
     printf("Total Fails: %i\n", fails);

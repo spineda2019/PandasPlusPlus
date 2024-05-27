@@ -7,4 +7,6 @@ int TestPrint(int* passes, int* fails);
 
 int TestAddition(int* passes, int* fails);
 
+int TestSum(int* passes, int* fails);
+
 #endif  // TEST_C_SRC_INCLUDE_COLUMN_TEST_H_

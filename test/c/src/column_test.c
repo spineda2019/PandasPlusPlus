@@ -65,3 +65,31 @@ int TestAddition(int* passes, int* fails) {
         return 1;
     }
 }
+
+int TestSum(int* passes, int* fails) {
+    float nums[3] = {3.0f, 2.0f, 6.7f};
+    const char key[] = "Column";
+
+    FColumn col = NewFColumn(nums, 3, key);
+
+    if (!col) {
+        FAILURE_PRINT("TestSum");
+        (*fails)++;
+        return 0;
+    } else {
+        float sum = SumFColumn(col);
+
+        if (sum != (nums[0] + nums[1] + nums[2])) {
+            DeleteFColumn(col);
+            FAILURE_PRINT("TestSum");
+            (*fails)++;
+            return 0;
+        } else {
+            DeleteFColumn(col);
+            SUCCESS_PRINT("TestSum");
+            printf("Sum: %f\n\n", sum);
+            (*passes)++;
+            return 1;
+        }
+    }
+}
