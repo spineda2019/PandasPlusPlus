@@ -101,7 +101,7 @@ static int InitPyFColumn(FColumnObject *self, PyObject *args, PyObject *kwds) {
         }
     }
 
-    FColumn column = NewFColumn(&(data[0]), length, key);
+    FColumn column = NewFColumn(&*(data.cbegin()), data.size(), key);
 
     if (column) {
         PyObject *tmp{(PyObject *)self->column};
@@ -118,9 +118,7 @@ static int InitPyFColumn(FColumnObject *self, PyObject *args, PyObject *kwds) {
 static PyObject *FSumFunction(PyObject *self, PyObject *args) {
     (void)args;
 
-    FColumnObject *col{(FColumnObject *)self};
-
-    return PyLong_FromLong(10);
+    return PyFloat_FromDouble(SumFColumn(((FColumnObject *)self)->column));
 }
 
 static PyMethodDef FColumnMethods[] = {
