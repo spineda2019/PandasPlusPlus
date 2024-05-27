@@ -22,6 +22,8 @@
 #define PPP_PPP_COLUMN_HPP_
 
 #include <algorithm>
+#include <complex>
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <execution>
@@ -49,6 +51,19 @@ concept BasicEntry = requires(T first, T second) {
     (first * second);
     std::cout << first;
 };
+
+template <class T>
+concept SimpleNumber = std::integral<T> || std::floating_point<T>;
+
+template <class T>
+concept SimpleComplexNumber = requires(T value) {
+    T::value_type;
+    requires SimpleNumber<typename T::value_type>;
+    requires std::same_as<T, std::complex<typename T::value_type>>;
+};
+
+template <class T>
+concept Number = SimpleComplexNumber<T> || SimpleNumber<T>;
 
 template <BasicEntry T>
 class Column {
@@ -82,6 +97,10 @@ class Column {
     template <BasicEntry V>
     constexpr friend inline std::optional<V> operator*(const Column<V> &lhs,
                                                        const Column<V> &rhs);
+
+    template <Number V>
+    constexpr friend inline Column<V> operator*(const V &lhs,
+                                                const Column<V> &rhs);
 
     template <BasicEntry V>
     constexpr friend inline bool operator==(const Column<V> &lhs,
@@ -159,6 +178,17 @@ constexpr inline std::optional<V> operator*(const Column<V> &lhs,
         }
         return sum;
     }
+}
+
+template <Number V>
+constexpr inline Column<V> operator*(const V &lhs, const Column<V> &rhs) {
+    std::vector<V> data(rhs.data_.size());
+
+    std::transform(std::execution::par_unseq, rhs.data_.cbegin(),
+                   rhs.data_.cend(), data.begin(),
+                   [&lhs](const V &entry) { return lhs * entry; });
+
+    return Column(std::move(data), rhs.key_ + " * " + rhs.key_);
 }
 
 }  // namespace ppp
