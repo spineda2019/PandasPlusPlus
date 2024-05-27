@@ -210,6 +210,27 @@ bool TestSum(const std::unique_ptr<std::size_t>& passes,
     }
 }
 
+bool TestAppend(const std::unique_ptr<std::size_t>& passes,
+                const std::unique_ptr<std::size_t>& fails) {
+    std::vector<int> data{1, 5, 6};
+    std::vector<int> data2{1, 5, 6, 7};
+
+    ppp::Column col{data, "Key"};
+    ppp::Column col2{data2, "Key"};
+
+    col.Append(7);
+
+    if (col == col2) {
+        PassNotification(col, "TestAppend");
+        (*passes)++;
+        return true;
+    } else {
+        FailNotification(col, "TestAppend");
+        (*fails)++;
+        return false;
+    }
+}
+
 }  // namespace
 
 bool ColumnMasterTest(const std::unique_ptr<std::size_t>& passes,
@@ -217,7 +238,7 @@ bool ColumnMasterTest(const std::unique_ptr<std::size_t>& passes,
     return TestConstruction(passes, fails) && TestAddition(passes, fails) &&
            TestIndexing(passes, fails) && TestSum(passes, fails) &&
            TestComparison(passes, fails) && TestSubtraction(passes, fails) &&
-           TestDot(passes, fails);
+           TestDot(passes, fails) && TestAppend(passes, fails);
 }
 
 }  // namespace column_test
