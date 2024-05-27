@@ -67,10 +67,10 @@ static PyObject *NewPyFColumn(PyTypeObject *type, PyObject *args,
 static int InitPyFColumn(FColumnObject *self, PyObject *args, PyObject *kwds) {
     (void)kwds;
 
-    PyObject list{};
+    PyObject *list{};
     const char *key{};
 
-    if (!PyArg_ParseTuple(args, "Os", &list, key)) {
+    if (!PyArg_ParseTuple(args, "Os", list, key)) {
         return -1;
     }
 
@@ -78,7 +78,7 @@ static int InitPyFColumn(FColumnObject *self, PyObject *args, PyObject *kwds) {
         return -1;
     }
 
-    size_t length{static_cast<size_t>(PyList_Size(&list))};
+    size_t length{static_cast<size_t>(PyList_Size(list))};
 
     return 0;
 }
@@ -90,13 +90,6 @@ static PyObject *FSumFunction(PyObject *self, PyObject *args) {
 
     return PyLong_FromLong(10);
 }
-
-static struct PyMethodDef FSum = {
-    "sum",
-    FSumFunction,
-    METH_NOARGS,
-    "Sum the contents of a column of floats",
-};
 
 static PyMethodDef FColumnMethods[] = {
     {
