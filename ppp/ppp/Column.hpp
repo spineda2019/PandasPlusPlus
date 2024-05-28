@@ -68,10 +68,10 @@ concept Number = SimpleComplexNumber<T> || SimpleNumber<T>;
 template <BasicEntry T>
 class Column {
  public:
-    constexpr Column(const std::vector<T> &data, std::string_view key)
+    constexpr Column(const std::vector<T> &data, const std::string_view key)
         : data_{data}, key_{key} {}
 
-    constexpr Column(const std::vector<T> &&data, std::string_view key)
+    constexpr Column(const std::vector<T> &&data, const std::string_view key)
         : data_{data}, key_{key} {}
 
     constexpr explicit Column(const Column<T> &&moved)
@@ -121,15 +121,6 @@ class Column {
     std::vector<T> data_;
     std::string key_;
 };
-
-template <BasicEntry T>
-constexpr Column<T> I_HAT{std::vector<T>{T(1), 0, 0}, "i-hat"};
-
-template <BasicEntry T>
-constexpr Column<T> J_HAT{std::vector<T>{0, T(1), 0}, "j-hat"};
-
-template <BasicEntry T>
-constexpr Column<T> K_HAT{std::vector<T>{0, 0, T(1)}, "k-hat"};
 
 template <BasicEntry V>
 inline std::ostream &operator<<(std::ostream &stream, const Column<V> &column) {
