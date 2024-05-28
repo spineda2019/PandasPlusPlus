@@ -85,6 +85,8 @@ class Column {
                            data_.end());
     }
 
+    constexpr std::size_t Size() const { return data_.size(); }
+
     constexpr T LNorm(std::optional<std::size_t> norm) {
         if (!norm.has_value()) {
             // L-Infinity - max element magnitude
