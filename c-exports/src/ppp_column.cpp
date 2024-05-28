@@ -136,10 +136,10 @@ C_API void DeleteLColumn(LColumn column) { DeleteColumnImplementation(long); }
 
 C_API float SumFColumn(const FColumn column) { SumColumnImplementation(float); }
 
-C_API float SumDColumn(const DColumn column) {
+C_API double SumDColumn(const DColumn column) {
     SumColumnImplementation(double);
 }
 
-C_API float SumIColumn(const IColumn column) { SumColumnImplementation(int); }
+C_API int SumIColumn(const IColumn column) { SumColumnImplementation(int); }
 
-C_API float SumLColumn(const LColumn column) { SumColumnImplementation(long); }
+C_API long SumLColumn(const LColumn column) { SumColumnImplementation(long); }

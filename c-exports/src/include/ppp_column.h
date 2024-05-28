@@ -70,11 +70,11 @@ C_API void DeleteLColumn(LColumn column);
 
 C_API float SumFColumn(const FColumn column);
 
-C_API float SumDColumn(const DColumn column);
+C_API double SumDColumn(const DColumn column);
 
-C_API float SumIColumn(const IColumn column);
+C_API int SumIColumn(const IColumn column);
 
-C_API float SumLColumn(const LColumn column);
+C_API long SumLColumn(const LColumn column);
 
 #ifdef __cplusplus
 }
