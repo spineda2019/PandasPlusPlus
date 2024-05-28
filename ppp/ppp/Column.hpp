@@ -26,6 +26,7 @@
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <execution>
 #include <functional>
 #include <iostream>
@@ -49,6 +50,8 @@ concept BasicEntry = requires(T first, T second) {
     first - second;
     first / second;
     (first * second);
+    std::abs(first);
+    T(0);
     std::cout << first;
 };
 
@@ -80,6 +83,37 @@ class Column {
     constexpr inline T Sum() {
         return std::reduce(std::execution::par_unseq, data_.begin(),
                            data_.end());
+    }
+
+    constexpr T LNorm(std::optional<std::size_t> norm) {
+        if (!norm.has_value()) {
+            // L-Infinity - max element magnitude
+
+            return std::abs(*std::max_element(
+                std::execution::par_unseq, data_.cbegin(), data_.cend(),
+                [](const T &left, const T &right) {
+                    return std::abs(left) < std::abs(right);
+                }));
+
+        } else if (std::size_t norm_val{norm.value()}; norm_val == 1) {
+            // L-1 - Manhattan Distance
+            return std::reduce(
+                std::execution::par_unseq, data_.cbegin(), data_.cend(), T(0),
+                [](const T &lhs, const T &rhs) { return lhs + std::abs(rhs); });
+        } else if (norm_val == 0) {
+            // L-0 - Number of non 0s
+            return T(std::count_if(
+                std::execution::par_unseq, data_.cbegin(), data_.cend(),
+                [](const T &value) { return value != T(0); }));
+        } else {
+            return std::pow(
+                std::reduce(std::execution::par_unseq, data_.cbegin(),
+                            data_.cend(), T(0),
+                            [&norm_val](const T &lhs, const T &rhs) {
+                                return lhs + std::pow(std::abs(rhs), norm_val);
+                            }),
+                (1.0 / static_cast<double>(norm_val)));
+        }
     }
 
     constexpr void Append(T &&value) { data_.emplace_back(value); }
