@@ -76,6 +76,16 @@ C_API int SumIColumn(const IColumn column);
 
 C_API long SumLColumn(const LColumn column);
 
+/* ****************************** Size Method ******************************* */
+
+C_API size_t FColumnSize(const FColumn column);
+
+C_API size_t DColumnSize(const DColumn column);
+
+C_API size_t IColumnSize(const IColumn column);
+
+C_API size_t LColumnSize(const LColumn column);
+
 #ifdef __cplusplus
 }
 #endif

@@ -143,3 +143,16 @@ C_API double SumDColumn(const DColumn column) {
 C_API int SumIColumn(const IColumn column) { SumColumnImplementation(int); }
 
 C_API long SumLColumn(const LColumn column) { SumColumnImplementation(long); }
+
+/* ****************************** Size Method ******************************* */
+
+#define ColumnSize(type) \
+    return (reinterpret_cast<ppp::Column<type> *>(column->opaque_ptr))->Size();
+
+C_API size_t FColumnSize(const FColumn column) { ColumnSize(float); }
+
+C_API size_t DColumnSize(const DColumn column) { ColumnSize(double); }
+
+C_API size_t IColumnSize(const IColumn column) { ColumnSize(int); }
+
+C_API size_t LColumnSize(const LColumn column) { ColumnSize(long); }
