@@ -105,6 +105,10 @@ class Column {
     constexpr friend inline Column<V> operator*(const V &lhs,
                                                 const Column<V> &rhs);
 
+    template <Number V>
+    constexpr friend inline Column<V> operator*(const Column<V> &lhs,
+                                                const V &rhs);
+
     template <BasicEntry V>
     constexpr friend inline bool operator==(const Column<V> &lhs,
                                             const Column<V> &rhs);
@@ -191,7 +195,12 @@ constexpr inline Column<V> operator*(const V &lhs, const Column<V> &rhs) {
                    rhs.data_.cend(), data.begin(),
                    [&lhs](const V &entry) { return lhs * entry; });
 
-    return Column(std::move(data), rhs.key_ + " * " + rhs.key_);
+    return Column(std::move(data), rhs.key_ + " * " + std::to_string(lhs));
+}
+
+template <Number V>
+constexpr inline Column<V> operator*(const Column<V> &lhs, const V &rhs) {
+    return rhs * lhs;
 }
 
 }  // namespace ppp
