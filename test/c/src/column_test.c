@@ -93,3 +93,28 @@ int TestSum(int* passes, int* fails) {
         }
     }
 }
+
+int TestSize(int* passes, int* fails) {
+    const float nums[3] = {3.0f, 2.0f, 6.7f};
+    const char key[] = "Column";
+
+    FColumn col = NewFColumn(nums, 3, key);
+
+    if (!col) {
+        FAILURE_PRINT("TestSize");
+        (*fails)++;
+        return 0;
+    } else {
+        size_t size = FColumnSize(col);
+
+        if (size != 3) {
+            FAILURE_PRINT("TestSize");
+            (*fails)++;
+            return 0;
+        } else {
+            SUCCESS_PRINT("TestSize");
+            (*passes)++;
+            return 0;
+        }
+    }
+}
