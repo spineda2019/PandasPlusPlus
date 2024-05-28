@@ -231,6 +231,35 @@ bool TestAppend(const std::unique_ptr<std::size_t>& passes,
     }
 }
 
+bool TestScale(const std::unique_ptr<std::size_t>& passes,
+               const std::unique_ptr<std::size_t>& fails) {
+    std::vector<int> data{1, 5, 6};
+    std::vector<int> scaled_data{3, 15, 18};
+
+    ppp::Column col{data, "Key"};
+    ppp::Column scaled_col{scaled_data, "Key"};
+
+    ppp::Column scaled = 3 * col;
+
+    if (scaled != scaled_col) {
+        FailNotification(col, "TestScale");
+        (*fails)++;
+        return false;
+    }
+
+    ppp::Column scaled_again = col * 3;
+
+    if (scaled_again != scaled_col) {
+        FailNotification(col, "TestScale");
+        (*fails)++;
+        return false;
+    } else {
+        PassNotification(scaled_again, "TestScale");
+        (*passes)++;
+        return true;
+    }
+}
+
 }  // namespace
 
 bool ColumnMasterTest(const std::unique_ptr<std::size_t>& passes,
@@ -238,7 +267,8 @@ bool ColumnMasterTest(const std::unique_ptr<std::size_t>& passes,
     return TestConstruction(passes, fails) && TestAddition(passes, fails) &&
            TestIndexing(passes, fails) && TestSum(passes, fails) &&
            TestComparison(passes, fails) && TestSubtraction(passes, fails) &&
-           TestDot(passes, fails) && TestAppend(passes, fails);
+           TestDot(passes, fails) && TestAppend(passes, fails) &&
+           TestScale(passes, fails);
 }
 
 }  // namespace column_test
