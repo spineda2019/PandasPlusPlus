@@ -1,5 +1,6 @@
 #include "include/column_tests.hpp"
 
+#include <complex>
 #include <memory>
 #include <optional>
 #include <string_view>
@@ -260,6 +261,50 @@ bool TestScale(const std::unique_ptr<std::size_t>& passes,
     }
 }
 
+bool TestNorm(const std::unique_ptr<std::size_t>& passes,
+              const std::unique_ptr<std::size_t>& fails) {
+    std::vector<int> data{-3, -4};
+    ppp::Column col{data, "Key"};
+
+    if (col.LNorm(1) != 7) {
+        FailNotification(col, "TestNorm");
+        (*fails)++;
+        std::cout << "L-1 Failed" << col.LNorm(1) << std::endl;
+        return false;
+    };
+
+    std::vector<double> data_d{-3.0, -4.0};
+    ppp::Column col_d{data_d, "Key"};
+
+    if (col_d.LNorm(2) != 5.0) {
+        FailNotification(col_d, "TestNorm");
+        (*fails)++;
+        std::cout << "L-2 Failed" << col_d.LNorm(2) << std::endl;
+        return false;
+    };
+
+    std::vector<std::complex<double>> data_c{-3.0, -4.0};
+    ppp::Column col_c{data_c, "Key"};
+
+    if (col_c.LNorm(std::nullopt) != 4.0) {
+        FailNotification(col_d, "TestNorm");
+        (*fails)++;
+        std::cout << "L-inf Failed" << col_d.LNorm(std::nullopt) << std::endl;
+        return false;
+    };
+
+    if (col_c.LNorm(0) != 2.0) {
+        FailNotification(col_d, "TestNorm");
+        (*fails)++;
+        std::cout << "L-0 Failed" << col_d.LNorm(0) << std::endl;
+        return false;
+    };
+
+    PassNotification(col_c, "TestNorm");
+    (*passes)++;
+    return true;
+}
+
 }  // namespace
 
 bool ColumnMasterTest(const std::unique_ptr<std::size_t>& passes,
@@ -268,7 +313,7 @@ bool ColumnMasterTest(const std::unique_ptr<std::size_t>& passes,
            TestIndexing(passes, fails) && TestSum(passes, fails) &&
            TestComparison(passes, fails) && TestSubtraction(passes, fails) &&
            TestDot(passes, fails) && TestAppend(passes, fails) &&
-           TestScale(passes, fails);
+           TestScale(passes, fails) && TestNorm(passes, fails);
 }
 
 }  // namespace column_test
