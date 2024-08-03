@@ -121,6 +121,22 @@ class Column {
     constexpr void Append(T &&value) { data_.emplace_back(value); }
     constexpr void Append(const T &value) { data_.emplace_back(value); }
 
+    /* ********************************************************************** */
+    /*                               Operators                                */
+    /* ********************************************************************** */
+
+    constexpr inline std::optional<T> operator[](std::size_t index) {
+        if (index >= data_.size()) {
+            return std::nullopt;
+        } else {
+            return data_[index];
+        }
+    }
+
+    /* ********************************************************************** */
+    /*                                Friends                                 */
+    /* ********************************************************************** */
+
     template <BasicEntry V>
     friend inline std::ostream &operator<<(std::ostream &stream,
                                            const Column<V> &column);
@@ -148,14 +164,6 @@ class Column {
     template <BasicEntry V>
     constexpr friend inline bool operator==(const Column<V> &lhs,
                                             const Column<V> &rhs);
-
-    constexpr inline std::optional<T> operator[](std::size_t index) {
-        if (index >= data_.size()) {
-            return std::nullopt;
-        } else {
-            return data_[index];
-        }
-    }
 
  private:
     std::vector<T> data_;
