@@ -21,9 +21,9 @@
 #ifndef PPP_PPP_MATRIX_HPP_
 #define PPP_PPP_MATRIX_HPP_
 
-#include "Column.hpp"
-
 #include <algorithm>
+#include <cfloat>
+#include <cmath>
 #include <complex>
 #include <concepts>
 #include <cstddef>
@@ -31,6 +31,7 @@
 #include <execution>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <mutex>
 #include <optional>
 #include <ostream>
@@ -40,6 +41,8 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+#include "Column.hpp"
 
 namespace ppp {
 constexpr std::uint8_t padding{5};
@@ -55,6 +58,40 @@ class Matrix {
           headers_{to_move.headers_},
           height_{to_move.height_},
           width_{to_move.width_} {}
+
+    std::optional<std::pair<Matrix<T>, Matrix<T>>> LU() const {
+        if (height_ != width_) {
+            return std::nullopt;
+        } else {
+            std::vector<std::vector<T>> lower_data{
+                height_, std::vector<T>(width_, static_cast<T>(0))};
+            std::vector<std::vector<T>> upper_data{data_};
+
+            for (std::size_t row{0}; row < height_; row++) {
+                lower_data[row][row] = static_cast<T>(1);
+            }
+
+            for (std::size_t column{0}; column < width_ - 1; column++) {
+                for (std::size_t row{column + 1}; row < height_; row++) {
+                    T multiplier =
+                        upper_data[row][column] / upper_data[column][column];
+                    lower_data[row][column] = multiplier;
+
+                    auto it{std::ranges::views::zip(upper_data[column],
+                                                    upper_data[row])};
+                    std::transform(std::execution::seq, it.begin(), it.end(),
+                                   upper_data[row].begin(),
+                                   [multiplier](const std::pair<T, T> vals) {
+                                       return (vals.first * multiplier * -1) +
+                                              vals.second;
+                                   });
+                }
+            }
+
+            return std::make_pair<Matrix<T>, Matrix<T>>(Matrix<T>{lower_data},
+                                                        Matrix<T>{upper_data});
+        }
+    }
 
     template <class... Args>
     static std::optional<Matrix<T>> New(Args... args) noexcept {
@@ -80,6 +117,9 @@ class Matrix {
     friend inline std::ostream &operator<<(std::ostream &stream,
                                            const Matrix<V> &matrix) noexcept;
 
+    template <BasicEntry V>
+    friend inline std::ostream &operator<<(std::ostream &stream,
+                                           Matrix<V> &&matrix) noexcept;
     template <BasicEntry V>
     friend inline std::optional<Matrix<V>> operator+(
         const Matrix<V> &lhs, const Matrix<V> &rhs) noexcept;
@@ -213,6 +253,13 @@ class Matrix {
 
 template <BasicEntry V>
 inline std::ostream &operator<<(std::ostream &stream,
+                                Matrix<V> &&matrix) noexcept {
+    stream << matrix;
+    return stream;
+}
+
+template <BasicEntry V>
+inline std::ostream &operator<<(std::ostream &stream,
                                 const Matrix<V> &matrix) noexcept {
     constexpr std::uint8_t max_height{20};
     std::size_t rows_to_print{};
@@ -340,18 +387,35 @@ inline bool operator==(const Matrix<V> &lhs, const Matrix<V> &rhs) noexcept {
     if ((lhs.height_ != rhs.height_) || (lhs.width_ != rhs.width_)) {
         return false;
     } else {
+        auto zip_it{std::views::zip(lhs.data_, rhs.data_)};
         return !(
             std::ranges::find_if(
-                std::views::zip(lhs.data_, rhs.data_),
+                zip_it,
                 [](std::pair<std::span<const V>, std::span<const V>> rows) {
+                    auto inner_zip_it{std::views::zip(rows.first, rows.second)};
                     return std::ranges::find_if(
-                               std::views::zip(rows.first, rows.second),
+                               inner_zip_it,
                                [](std::pair<const V, const V> vals) {
-                                   return vals.first != vals.second;
-                               }) !=
-                           std::ranges::end(
-                               std::views::zip(rows.first, rows.second));
-                }) != std::ranges::end(std::views::zip(lhs.data_, rhs.data_)));
+                                   if (std::is_floating_point_v<V>) {
+                                       const V m =
+                                           std::min(std::fabs(vals.first),
+                                                    std::fabs(vals.second));
+                                       const int exp =
+                                           m < std::numeric_limits<V>::min()
+                                               ? std::numeric_limits<
+                                                     V>::min_exponent -
+                                                     1
+                                               : std::ilogb(m);
+                                       return std::fabs(vals.first) -
+                                                  std::fabs(vals.second) >
+                                              std::ldexp(std::numeric_limits<
+                                                             V>::epsilon(),
+                                                         exp);
+                                   } else {
+                                       return vals.first != vals.second;
+                                   }
+                               }) != std::ranges::end(inner_zip_it);
+                }) != std::ranges::end(zip_it));
     }
 }
 

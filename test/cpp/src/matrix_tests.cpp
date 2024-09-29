@@ -7,6 +7,7 @@
 #include <optional>
 #include <ostream>
 #include <string_view>
+#include <vector>
 
 #include "ppp/Matrix.hpp"
 
@@ -265,6 +266,62 @@ bool TestNonMatrixSubtraction(const std::unique_ptr<std::size_t>& passes,
         return false;
     }
 }
+
+bool TestLU(const std::unique_ptr<std::size_t>& passes,
+            const std::unique_ptr<std::size_t>& fails) {
+    std::optional<ppp::Matrix<double>> matrix{
+        ppp::Matrix<double>::New(std::vector<std::vector<double>>{
+            std::vector<double>{25.0, 5.0, 1.0},
+            std::vector<double>{64.0, 8.0, 1.0},
+            std::vector<double>{144.0, 12.0, 1.0},
+        })};
+    if (!matrix.has_value()) {
+        (*fails)++;
+        std::cout << "Test: TestLU Failed..." << std::endl << std::endl;
+        return false;
+    } else {
+        const ppp::Matrix<double>& value{matrix.value()};
+        auto lu_pair{value.LU()};
+        if (!lu_pair.has_value()) {
+            (*fails)++;
+            std::cout << "Test: TestLU Failed..." << std::endl << std::endl;
+            return false;
+        } else {
+            const ppp::Matrix<double>& lower{lu_pair.value().first};
+            const ppp::Matrix<double>& upper{lu_pair.value().second};
+            ppp::Matrix<double> known_lower{
+                ppp::Matrix<double>::New(std::vector<std::vector<double>>{
+                                             {1.0, 0, 0},
+                                             {2.56, 1, 0},
+                                             {5.76, 3.5, 1},
+                                         })
+                    .value()};
+            ppp::Matrix<double> known_upper{
+                ppp::Matrix<double>::New(std::vector<std::vector<double>>{
+                                             {25.0, 5.0, 1.0},
+                                             {0, -4.8, -1.56},
+                                             {0, 0, 0.7},
+                                         })
+                    .value()};
+            if ((lower != known_lower) || (upper != known_upper)) {
+                (*fails)++;
+                std::cout << "Test: TestLU Failed..." << std::endl << std::endl;
+                std::cout << lower << std::endl;
+                std::cout << known_lower << std::endl;
+                std::cout << (lower - known_lower).value() << std::endl;
+                std::cout << upper << std::endl;
+                std::cout << known_upper << std::endl;
+                std::cout << (upper - known_upper).value() << std::endl;
+                return false;
+            } else {
+                (*passes)++;
+                std::cout << "Test: TestLU Passed!" << std::endl << std::endl;
+                return true;
+            }
+        }
+    }
+}
+
 }  // namespace
 
 bool MatrixMasterTest(const std::unique_ptr<std::size_t>& passes,
@@ -274,7 +331,7 @@ bool MatrixMasterTest(const std::unique_ptr<std::size_t>& passes,
            TestInsertingHeaders(passes, fails) &&
            TestBadShapeCatching(passes, fails) && TestAddition(passes, fails) &&
            TestSubtraction(passes, fails) &&
-           TestNonMatrixSubtraction(passes, fails);
+           TestNonMatrixSubtraction(passes, fails) && TestLU(passes, fails);
 }
 
 }  // namespace matrix_test
