@@ -52,12 +52,30 @@ class Matrix {
  public:
     ~Matrix() = default;
 
-    Matrix(Matrix<T> &&to_move)
+    Matrix(Matrix<T> &&to_move) noexcept
         : data_mutex_{},
           data_{to_move.data_},
           headers_{to_move.headers_},
           height_{to_move.height_},
           width_{to_move.width_} {}
+
+    std::optional<T> Det() const {
+        if (height_ != width_) {
+            return std::nullopt;
+        } else {
+            std::optional<std::pair<Matrix<T>>> lu_pair{LU()};
+            if (!lu_pair.has_value()) {
+                return std::nullopt;
+            } else {
+                const Matrix<T> &upper{lu_pair.value().second};
+                T det{0};
+                for (std::size_t row{0}; row < height_; row++) {
+                    det *= upper.data_[row][row];
+                }
+                return det;
+            }
+        }
+    }
 
     std::optional<std::pair<Matrix<T>, Matrix<T>>> LU() const {
         if (height_ != width_) {
@@ -320,7 +338,7 @@ inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
                                           [](const V &left, const V &right) {
                                               return left + right;
                                           });
-                           return std::move(row);
+                           return row;
                        });
 
         return std::make_optional<Matrix<V>>(Matrix<V>{new_data});
@@ -346,7 +364,7 @@ inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
                                           [](const V &left, const V &right) {
                                               return left - right;
                                           });
-                           return std::move(row);
+                           return row;
                        });
 
         return std::make_optional<Matrix<V>>(Matrix<V>{new_data});
