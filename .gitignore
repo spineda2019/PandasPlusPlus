@@ -1,4 +1,5 @@
 .cache/
+.vs/
 x64/
 build/
 debug-build/
