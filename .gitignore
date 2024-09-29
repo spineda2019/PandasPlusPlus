@@ -5,6 +5,8 @@ build/
 debug-build/
 winbuild/
 Testing/
+*bin/
+*obj/
 
 TODO.txt
 dllmain.cpp
