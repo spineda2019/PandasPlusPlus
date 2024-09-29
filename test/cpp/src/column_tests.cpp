@@ -305,6 +305,37 @@ bool TestNorm(const std::unique_ptr<std::size_t>& passes,
     return true;
 }
 
+bool TestCross(const std::unique_ptr<std::size_t>& passes,
+               const std::unique_ptr<std::size_t>& fails) {
+    std::vector<int> data{3, 4, 5};
+    std::vector<int> other{1, 2, 3};
+
+    ppp::Column col{data, "Key"};
+    ppp::Column other_col{other, "Key"};
+
+    std::optional<ppp::Column<int>> cross{col.Cross3D(other_col)};
+
+    if (!cross.has_value()) {
+        FailNotification(col, "TestNorm");
+        (*fails)++;
+        std::cout << "Test Cross Failed: " << "Cross product returned nothing"
+                  << std::endl;
+        return false;
+    } else {
+        ppp::Column<int> expected_result{std::vector<int>{2, -4, 2}, ""};
+        if (expected_result == cross.value()) {
+            PassNotification(cross.value(), "TestCross");
+            (*passes)++;
+            return true;
+        } else {
+            FailNotification(cross.value(), "TestCross");
+            (*fails)++;
+            std::cout << "Test Cross Failed" << std::endl;
+            return false;
+        }
+    }
+}
+
 }  // namespace
 
 bool ColumnMasterTest(const std::unique_ptr<std::size_t>& passes,
@@ -313,7 +344,8 @@ bool ColumnMasterTest(const std::unique_ptr<std::size_t>& passes,
            TestIndexing(passes, fails) && TestSum(passes, fails) &&
            TestComparison(passes, fails) && TestSubtraction(passes, fails) &&
            TestDot(passes, fails) && TestAppend(passes, fails) &&
-           TestScale(passes, fails) && TestNorm(passes, fails);
+           TestScale(passes, fails) && TestNorm(passes, fails) &&
+           TestCross(passes, fails);
 }
 
 }  // namespace column_test

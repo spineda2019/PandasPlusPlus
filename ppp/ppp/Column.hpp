@@ -118,6 +118,36 @@ class Column {
         }
     }
 
+    constexpr std::optional<T> Dot(const Column<T> &rhs) const {
+        if (rhs.Size() != this->Size()) {
+            return std::nullopt;
+        } else {
+            auto it = std::ranges::views::zip(this->data_, rhs.data_);
+            std::atomic<T> sum{};
+            std::for_each(std::execution::par_unseq, it.begin(), it.end(),
+                          [&sum](const std::pair<T, T> &x) {
+                              sum += x.first * x.second;
+                          });
+            return sum;
+        }
+    }
+
+    constexpr std::optional<Column<T>> Cross3D(const Column<T> &rhs,
+                                               std::string &&key = "") const {
+        if (rhs.data_.size() != 3 || this->data_.size() != 3) {
+            return std::nullopt;
+        } else {
+            std::vector<T> cross{
+                (data_[1] * rhs.data_[2]) - (data_[2] * rhs.data_[1]),
+                (data_[2] * rhs.data_[0]) - (data_[0] * rhs.data_[2]),
+                (data_[0] * rhs.data_[1]) - (data_[1] * rhs.data_[0]),
+            };
+
+            return std::make_optional<Column<T>>(std::move(cross),
+                                                 std::move(key));
+        }
+    }
+
     constexpr void Append(T &&value) { data_.emplace_back(value); }
     constexpr void Append(const T &value) { data_.emplace_back(value); }
 
@@ -172,7 +202,8 @@ class Column {
 
 template <BasicEntry V>
 inline std::ostream &operator<<(std::ostream &stream, const Column<V> &column) {
-    stream << "\"" << column.key_ << "\"" << " | ";
+    stream << "\"" << column.key_ << "\""
+           << " | ";
     for (const V &entry : column.data_) {
         stream << entry << " | ";
     }
@@ -220,15 +251,7 @@ constexpr inline bool operator==(const Column<V> &lhs, const Column<V> &rhs) {
 template <BasicEntry V>
 constexpr inline std::optional<V> operator*(const Column<V> &lhs,
                                             const Column<V> &rhs) {
-    if (lhs.data_.size() != rhs.data_.size()) [[unlikely]] {
-        return std::nullopt;
-    } else {
-        V sum{};
-        for (std::size_t index{0}; index < lhs.data_.size(); index++) {
-            sum += lhs.data_[index] * rhs.data_[index];
-        }
-        return sum;
-    }
+    return lhs.Dot(rhs);
 }
 
 template <Number V>
