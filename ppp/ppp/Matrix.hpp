@@ -21,6 +21,8 @@
 #ifndef PPP_PPP_MATRIX_HPP_
 #define PPP_PPP_MATRIX_HPP_
 
+#include "Column.hpp"
+
 #include <algorithm>
 #include <complex>
 #include <concepts>
@@ -41,27 +43,8 @@
 
 namespace ppp {
 constexpr std::uint8_t padding{5};
-template <class T>
-concept AlgebraicTerm = requires(T value) {
-    value == value;
-    value = -value;
-    value + value;
-    value - value;
-    value *value;
-    std::cout << value;
-};
 
-template <class T>
-concept IsComplex = requires(T value) {
-    T::value_type;
-    std::is_same_v<T, std::complex<typename T::value_type>> == true;
-};
-
-template <class T>
-concept SimpleNumber =
-    std::integral<T> || std::floating_point<T> || IsComplex<T>;
-
-template <AlgebraicTerm T>
+template <BasicEntry T>
 class Matrix {
  public:
     ~Matrix() = default;
@@ -93,31 +76,31 @@ class Matrix {
         }
     }
 
-    template <AlgebraicTerm V>
+    template <BasicEntry V>
     friend inline std::ostream &operator<<(std::ostream &stream,
                                            const Matrix<V> &matrix) noexcept;
 
-    template <AlgebraicTerm V>
+    template <BasicEntry V>
     friend inline std::optional<Matrix<V>> operator+(
         const Matrix<V> &lhs, const Matrix<V> &rhs) noexcept;
 
-    template <AlgebraicTerm V>
+    template <BasicEntry V>
     friend inline std::optional<Matrix<V>> operator-(
         const Matrix<V> &lhs, const Matrix<V> &rhs) noexcept;
 
-    template <AlgebraicTerm V, SimpleNumber U>
+    template <BasicEntry V, SimpleNumber U>
     friend inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
                                                      U rhs) noexcept;
 
-    template <AlgebraicTerm V, SimpleNumber U>
+    template <BasicEntry V, SimpleNumber U>
     friend inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
                                                      U rhs) noexcept;
 
-    template <AlgebraicTerm V>
+    template <BasicEntry V>
     friend inline bool operator==(const Matrix<V> &lhs,
                                   const Matrix<V> &rhs) noexcept;
 
-    template <AlgebraicTerm V>
+    template <BasicEntry V>
     friend inline std::optional<Matrix<V>> operator*(
         const Matrix<V> &lhs, const Matrix<V> &rhs) noexcept;
 
@@ -228,7 +211,7 @@ class Matrix {
     static constexpr std::size_t MAX_COLUMN_WIDTH{15};
 };  // class Matrix
 
-template <AlgebraicTerm V>
+template <BasicEntry V>
 inline std::ostream &operator<<(std::ostream &stream,
                                 const Matrix<V> &matrix) noexcept {
     constexpr std::uint8_t max_height{20};
@@ -271,7 +254,7 @@ inline std::ostream &operator<<(std::ostream &stream,
     return stream;
 }
 
-template <AlgebraicTerm V>
+template <BasicEntry V>
 inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
                                           const Matrix<V> &rhs) noexcept {
     if ((lhs.height_ != rhs.height_) || (lhs.width_ != rhs.width_)) {
@@ -297,7 +280,7 @@ inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
     }
 }
 
-template <AlgebraicTerm V>
+template <BasicEntry V>
 inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
                                           const Matrix<V> &rhs) noexcept {
     if ((lhs.height_ != rhs.height_) || (lhs.width_ != rhs.width_)) {
@@ -322,7 +305,7 @@ inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
         return std::make_optional<Matrix<V>>(Matrix<V>{new_data});
     }
 }
-template <AlgebraicTerm V, SimpleNumber U>
+template <BasicEntry V, SimpleNumber U>
 inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
                                           U rhs) noexcept {
     const std::size_t height{lhs.height_};
@@ -337,7 +320,7 @@ inline std::optional<Matrix<V>> operator-(const Matrix<V> &lhs,
     }
 }
 
-template <AlgebraicTerm V, SimpleNumber U>
+template <BasicEntry V, SimpleNumber U>
 inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
                                           U rhs) noexcept {
     const std::size_t height{lhs.height_};
@@ -352,7 +335,7 @@ inline std::optional<Matrix<V>> operator+(const Matrix<V> &lhs,
     }
 }
 
-template <AlgebraicTerm V>
+template <BasicEntry V>
 inline bool operator==(const Matrix<V> &lhs, const Matrix<V> &rhs) noexcept {
     if ((lhs.height_ != rhs.height_) || (lhs.width_ != rhs.width_)) {
         return false;
@@ -372,7 +355,7 @@ inline bool operator==(const Matrix<V> &lhs, const Matrix<V> &rhs) noexcept {
     }
 }
 
-template <AlgebraicTerm V>
+template <BasicEntry V>
 inline std::optional<Matrix<V>> operator*(const Matrix<V> &lhs,
                                           const Matrix<V> &rhs) noexcept {
     /* TODO: implement */
