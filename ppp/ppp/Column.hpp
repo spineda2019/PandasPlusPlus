@@ -80,7 +80,7 @@ class Column {
     constexpr explicit Column(const Column<T> &&moved)
         : data_{moved.data_}, key_{moved.key_} {}
 
-    constexpr inline T Sum() {
+    constexpr inline T Sum() const {
         return std::reduce(std::execution::par_unseq, data_.begin(),
                            data_.end());
     }
