@@ -94,6 +94,27 @@ int TestSum(int* passes, int* fails) {
     }
 }
 
+int TestGeneric(int* passes, int* fails) {
+    printf("***************************************************************\n");
+    printf("Generic Test\n");
+    printf("***************************************************************\n");
+    const float nums[5] = {1.5f, 2.5f, 3.5f, 4.5f, 5.0f};
+    const char* key = "Generic Column";
+
+    Column col = New(Float, nums, 5, key);
+
+    if (!col) {
+        FAILURE_PRINT("TestSize");
+        (*fails)++;
+        return 0;
+    } else {
+        PrintColumn(col);
+        (*passes)++;
+    }
+
+    return 1;
+}
+
 int TestSize(int* passes, int* fails) {
     const float nums[3] = {3.0f, 2.0f, 6.7f};
     const char key[] = "Column";

@@ -10,6 +10,11 @@
 extern "C" {
 #endif
 
+enum Type {
+    Int,
+    Float,
+};
+
 typedef struct FColumn_t {
     void *opaque_ptr;
 } *FColumn;
@@ -26,7 +31,14 @@ typedef struct LColumn_t {
     void *opaque_ptr;
 } *LColumn;
 
+typedef struct Column_t {
+    enum Type t;
+    void *handle;
+} *Column;
+
 /* **************************** Column Factories **************************** */
+
+C_API Column New(enum Type t, const void *data, size_t length, const char *key);
 
 C_API FColumn NewFColumn(const float *data, size_t length, const char *key);
 
@@ -37,6 +49,8 @@ C_API IColumn NewIColumn(const int *data, size_t length, const char *key);
 C_API LColumn NewLColumn(const long *data, size_t length, const char *key);
 
 /* ****************************** Print Column ****************************** */
+
+C_API void PrintColumn(const Column self);
 
 C_API void PrintFColumn(const FColumn column);
 

@@ -6,9 +6,9 @@ int main(int argc, char** argv) {
     int passes = 0;
     int fails = 0;
 
-    TestConstruction(&passes, &fails) && TestPrint(&passes, &fails) &&
-        TestAddition(&passes, &fails) && TestSum(&passes, &fails) &&
-        TestSize(&passes, &fails);
+    TestGeneric(&passes, &fails) && TestConstruction(&passes, &fails) &&
+        TestPrint(&passes, &fails) && TestAddition(&passes, &fails) &&
+        TestSum(&passes, &fails) && TestSize(&passes, &fails);
 
     printf("Total Passes: %i\n", passes);
     printf("Total Fails: %i\n", fails);

@@ -9,6 +9,6 @@ set(CTEST_SOURCES
 
 add_executable(ctest ${CTEST_SOURCES})
 target_compile_features(ctest PUBLIC c_std_17)
-target_link_libraries(ctest PRIVATE libcexports)
-target_include_directories(ctest PRIVATE src/include)
+target_link_libraries(ctest PUBLIC libcexports)
+target_include_directories(ctest PUBLIC src/include)
 add_test(NAME CTest COMMAND $<TARGET_FILE:ctest>)

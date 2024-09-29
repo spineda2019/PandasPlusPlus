@@ -7,6 +7,7 @@
 #include <iostream>
 #include <ppp/Column.hpp>
 #include <ppp/Dataframe.hpp>
+#include <vector>
 
 #define EXTRACT_OBJECT(obj, type) *(reinterpret_cast<ppp::Column<type> *>(obj))
 
@@ -18,6 +19,33 @@
     struct_ptr->opaque_ptr = col;                                      \
                                                                        \
     return opaque_struct;
+
+C_API Column New(enum Type t, const void *data, size_t length,
+                 const char *key) {
+    Column c{new Column_t()};
+    switch (t) {
+        case Type::Int:
+            c->t = Type::Int;
+            c->handle = new ppp::Column<int>{
+                std::vector<int>{reinterpret_cast<const int *>(data),
+                                 reinterpret_cast<const int *>(data) + length},
+                key};
+            return c;
+            break;
+        case Type::Float:
+            c->t = Type::Float;
+            c->handle = new ppp::Column<float>{
+                std::vector<float>{
+                    reinterpret_cast<const float *>(data),
+                    reinterpret_cast<const float *>(data) + length},
+                key};
+            return c;
+            break;
+        default:
+            delete c;
+            return nullptr;
+    }
+}
 
 C_API FColumn NewFColumn(const float *data, size_t length, const char *key) {
     FColumn opaque_struct = new FColumn_t{};
@@ -49,6 +77,29 @@ C_API LColumn NewLColumn(const long *data, size_t length, const char *key) {
     } else {                                                  \
         std::cout << "Bad Column Handle..." << std::endl;     \
     }
+
+C_API void PrintColumn(const Column self) {
+    if (!self) {
+        std::cout << "Bad Column Handle..." << std::endl;
+        return;
+    } else {
+        switch (self->t) {
+            case Type::Int:
+                std::cout << *(reinterpret_cast<ppp::Column<int> *>(
+                                 self->handle))
+                          << std::endl;
+                break;
+            case Type::Float:
+                std::cout << *(reinterpret_cast<ppp::Column<float> *>(
+                                 self->handle))
+                          << std::endl;
+                break;
+            default:
+                std::cout << "Bad Column Handle..." << std::endl;
+                break;
+        }
+    }
+}
 
 C_API void PrintFColumn(const FColumn column) {
     PrintColumnImplementation(float);
